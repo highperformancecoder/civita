@@ -50,7 +50,7 @@ SUITE(TensorOps)
     auto arg=std::make_shared<TensorVal>(vector<unsigned>{5,3,2});
     for (size_t i=0; i<arg->size(); ++i) (*arg)[i]=i;
     Scan scan([](double& x,double y,size_t){x+=y;});
-    scan.setArgument(arg,"0",0);
+    scan.setArgument(arg,{"0",0});
     CHECK_EQUAL(arg->rank(), scan.rank());
     CHECK(scan.size()>1);
         
@@ -70,7 +70,7 @@ SUITE(TensorOps)
     auto dense=make_shared<TensorVal>(hc);
     for (size_t i=0; i<dense->size(); ++i) (*dense)[i]=i;
     PermuteAxis pa;
-    pa.setArgument(dense,"0");
+    pa.setArgument(dense,{"0",0});
     vector<size_t> permutation{1,4,3};
     pa.setPermutation(permutation);
     CHECK_EQUAL(2, pa.rank());
@@ -94,7 +94,7 @@ SUITE(TensorOps)
           }
       }
 
-    pa.setArgument(dense,"1");
+    pa.setArgument(dense,{"1",0});
     pa.setPermutation(permutation);
     CHECK_EQUAL(2, pa.rank());
     CHECK_EQUAL(5, pa.hypercube().dims()[0]);
@@ -123,7 +123,7 @@ SUITE(TensorOps)
     sparse->index(std::set<size_t>{2,4,5,8,10,11,15,20});
     for (size_t i=0; i<sparse->size(); ++i) (*sparse)[i]=sparse->index()[i];
 
-    pa.setArgument(sparse,"0");
+    pa.setArgument(sparse,{"0",0});
     pa.setPermutation(permutation);
     CHECK_EQUAL(2, pa.rank());
     CHECK_EQUAL(3, pa.hypercube().dims()[0]);
@@ -148,7 +148,7 @@ SUITE(TensorOps)
             CHECK(false);
           }
       }
-    pa.setArgument(sparse,"1");
+    pa.setArgument(sparse,{"1",0});
     pa.setPermutation(permutation);
     CHECK_EQUAL(2, pa.rank());
     CHECK_EQUAL(3, pa.hypercube().dims()[1]);

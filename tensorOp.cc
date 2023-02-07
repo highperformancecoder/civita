@@ -28,8 +28,7 @@ using namespace std;
 
 namespace civita
 {
-  void BinOp::setArguments(const TensorPtr& a1, const TensorPtr& a2,
-                           const std::string&, double)
+  void BinOp::setArguments(const TensorPtr& a1, const TensorPtr& a2, const Args&)
   {
     arg1=a1; arg2=a2;
     if (arg1 && arg1->rank()!=0)
@@ -50,7 +49,7 @@ namespace civita
   }
 
 
-  void ReduceArguments::setArguments(const vector<TensorPtr>& a,const std::string&,double)
+  void ReduceArguments::setArguments(const vector<TensorPtr>& a,const Args&)
   {
     hypercube({});
     if (!a.empty())
@@ -101,7 +100,7 @@ namespace civita
     return r;
   }
 
-  void ReductionOp::setArgument(const TensorPtr& a, const std::string& dimName,double)
+  void ReductionOp::setArgument(const TensorPtr& a,  const Args& args)
   {
     arg=a;
     dimension=std::numeric_limits<size_t>::max();
@@ -111,7 +110,7 @@ namespace civita
         m_hypercube=ahc;
         auto& xv=m_hypercube.xvectors;
         for (auto i=xv.begin(); i!=xv.end(); ++i)
-          if (i->name==dimName)
+          if (i->name==args.dimension)
             dimension=i-xv.begin();
         if (dimension<arg->rank())
           {
@@ -184,16 +183,16 @@ namespace civita
     return cachedResult[i];
   }
 
-  void DimensionedArgCachedOp::setArgument(const TensorPtr& a, const std::string& dimName, double av)
+  void DimensionedArgCachedOp::setArgument(const TensorPtr& a, const Args& args)
   {
     arg=a;
-    argVal=av;
+    argVal=args.val;
     if (!arg) {m_hypercube.xvectors.clear(); return;}
     dimension=std::numeric_limits<size_t>::max();
     auto hc=arg->hypercube();
     auto& xv=hc.xvectors;
     for (auto i=xv.begin(); i!=xv.end(); ++i)
-      if (i->name==dimName)
+      if (i->name==args.dimension)
         dimension=i-xv.begin();
     hypercube(move(hc));
   }
@@ -243,10 +242,10 @@ namespace civita
       }
   }
 
-  void Slice::setArgument(const TensorPtr& a,const string& axis, double index)
+  void Slice::setArgument(const TensorPtr& a,const Args& args)
   {
     arg=a;
-    sliceIndex=index;
+    sliceIndex=args.val;
     if (arg)
       {
         auto& xv=arg->hypercube().xvectors;
@@ -256,7 +255,7 @@ namespace civita
         size_t splitAxis=0;
         auto i=xv.begin();
         for (; i!=xv.end(); ++i)
-          if (i->name==axis)
+          if (i->name==args.dimension)
             {
               stride=split*i->size();
               break;
@@ -308,7 +307,7 @@ namespace civita
     return (*arg)[arg_index[i]];
   }
   
-  void Pivot::setArgument(const TensorPtr& a,const std::string&,double)
+  void Pivot::setArgument(const TensorPtr& a,const Args&)
   {
     arg=a;
     vector<string> axes;
@@ -394,16 +393,16 @@ namespace civita
   }
 
   
-  void PermuteAxis::setArgument(const TensorPtr& a,const std::string& axisName,double)
+  void PermuteAxis::setArgument(const TensorPtr& a,const Args& args)
   {
     arg=a;
     hypercube(arg->hypercube());
     m_index=arg->index();
     for (m_axis=0; m_axis<m_hypercube.xvectors.size(); ++m_axis)
-      if (m_hypercube.xvectors[m_axis].name==axisName)
+      if (m_hypercube.xvectors[m_axis].name==args.dimension)
         break;
     if (m_axis==m_hypercube.xvectors.size())
-      throw runtime_error("axis "+axisName+" not found");
+      throw runtime_error("axis "+args.dimension+" not found");
     for (size_t i=0; i<m_hypercube.xvectors[m_axis].size(); ++i)
       m_permutation.push_back(i);
   }
@@ -477,7 +476,7 @@ namespace civita
 //      cachedResult[i]=tmp[idx[i]];
 //  }
 
-  void SpreadOverHC::setArgument(const TensorPtr& a,const std::string&,double) {
+  void SpreadOverHC::setArgument(const TensorPtr& a,const Args&) {
     if (a->rank()!=rank())
       throw std::runtime_error("mismatch of dimensions");
     for (size_t i=0; i<a->rank(); ++i)
@@ -529,7 +528,7 @@ namespace civita
   
   Meld::Timestamp Meld::timestamp() const {return maxTimestamp(args);}
 
-  void Meld::setArguments(const vector<TensorPtr>& a, const string&, double)
+  void Meld::setArguments(const vector<TensorPtr>& a, const Args&)
   {
     if (a.empty()) return;
     args=a;
@@ -566,7 +565,7 @@ namespace civita
 
   Merge::Timestamp Merge::timestamp() const {return maxTimestamp(args);}
 
-  void Merge::setArguments(const vector<TensorPtr>& a, const string& dimension, double)
+  void Merge::setArguments(const vector<TensorPtr>& a, const Args& opArgs)
   {
     if (a.empty()) return;
     args=a;
@@ -577,7 +576,7 @@ namespace civita
 #endif
     // extend into the next dimension
     auto hc=args.front()->hypercube();
-    hc.xvectors.emplace_back(dimension);
+    hc.xvectors.emplace_back(opArgs.dimension);
     for (size_t i=0; i<args.size(); ++i)
       hc.xvectors.back().push_back(to_string(i));
     hypercube(move(hc));
