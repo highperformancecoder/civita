@@ -213,7 +213,7 @@ namespace classdesc_access
   template <>
   struct access_random_init<boost::posix_time::ptime> {
     void operator()(classdesc::random_init_t& r, const std::string&, boost::posix_time::ptime& x)
-    {x=boost::posix_time::from_time_t(time_t(r.rand()*std::numeric_limits<time_t>::max()));}
+    {x=boost::posix_time::from_time_t(time_t(r.rand()*double(std::numeric_limits<time_t>::max())));}
   };
 }
 #endif
