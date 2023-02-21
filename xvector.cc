@@ -148,6 +148,9 @@ namespace civita
   
   any AnyVal::operator()(const std::string& s) const
   {
+    // empty string can be used to represent a nothing value, eg in setCalipers, not an error
+    if (s.empty()) return any();
+    
     switch (dim.type)
       {
       case Dimension::string:
