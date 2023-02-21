@@ -54,6 +54,8 @@ namespace civita
     any(const std::string& x): type(Dimension::string), string(x) {}
     any(const double& x): type(Dimension::value), value(x) {}
     template <class T> any& operator=(const T&x) {return *this=any(x);}
+    // true if this is a default constructed objects
+    bool empty() const {return type==Dimension::string && string.empty();}
   };
 
   inline size_t any::hash() const {
@@ -87,6 +89,10 @@ namespace civita
     return false; // should never be here
   }
 
+  inline bool operator!=(const any& x, const any& y) {
+    return !(x==y);
+  }
+  
 #ifdef STRINGKEYMAP_H
   using classdesc::StringKeyMap;
 #else
@@ -116,13 +122,20 @@ namespace civita
   /// \a format - can be any format string suitable for a
   /// boost::date_time time_facet. eg "%Y-%m-%d %H:%M:%S"
   std::string str(const any&, const std::string& format="");
+
+  inline std::ostream& operator<<(std::ostream& o, const any& x)
+  {return o<<str(x);}
 }
 
 #ifdef CLASSDESC
+#pragma omit pack civita::any
+#pragma omit unpack civita::any
 #pragma omit json_pack civita::any
 #pragma omit json_unpack civita::any
 #pragma omit RESTProcess civita::any
 #include <json_pack_base.h>
+#include <pack_base.h>
+#include <random_init_base.h>
 namespace classdesc_access
 {
   template <>
@@ -133,6 +146,75 @@ namespace classdesc_access
   };
   template <>
   struct access_json_unpack<civita::any>: public classdesc::NullDescriptor<classdesc::json_pack_t> {};
+
+  template <>
+  struct access_pack<civita::any>
+  {
+    inline void operator()(classdesc::pack_t& b, const std::string&, const civita::any& x)
+    {
+      b<<static_cast<int>(x.type);
+      switch (x.type)
+        {
+        case civita::Dimension::string:
+          b<<x.string;
+          break;
+        case civita::Dimension::value:
+          b<<x.value;
+          break;
+        case civita::Dimension::time:
+          b<<x.time;
+          break;
+        }
+    }
+  };
+  
+  template <>
+  struct access_unpack<civita::any> {
+    inline void operator()(classdesc::pack_t& b, const std::string&, civita::any& x)
+    {
+      int type;
+      b>>type;
+      x.type=static_cast<civita::Dimension::Type>(type);
+      switch(x.type)
+        {
+        case civita::Dimension::string:
+          b>>x.string;
+          break;
+        case civita::Dimension::value:
+          b>>x.value;
+          break;
+        case civita::Dimension::time:
+          b>>x.time;
+          break;
+        }
+    }
+  };
+
+  template <>
+  struct access_pack<boost::posix_time::ptime> {
+    template <class T>
+    void operator()(classdesc::pack_t& b,const std::string&,T& x)
+    {
+      auto tm=to_tm(x);
+      b.packraw(reinterpret_cast<char*>(&tm),sizeof(tm));
+    }
+  };
+  template <>
+  struct access_unpack<boost::posix_time::ptime> {
+    template <class T>
+    void operator()(classdesc::pack_t& b,const std::string&,T& x)
+    {
+      struct tm tm;
+      b.unpackraw(reinterpret_cast<char*>(&tm),sizeof(tm));
+      x=boost::posix_time::ptime_from_tm(tm);
+    }
+  };
+
+  template <>
+  struct access_random_init<boost::posix_time::ptime> {
+    void operator()(classdesc::random_init_t& r, const std::string&, boost::posix_time::ptime& x)
+    {x=boost::posix_time::from_time_t(time_t(r.rand()*std::numeric_limits<time_t>::max()));}
+  };
 }
 #endif
 
