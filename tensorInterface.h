@@ -100,12 +100,12 @@ namespace civita
     template <class T>
     double operator()(const std::initializer_list<T>& indices) const
     {return atHCIndex(hcIndex(indices));}
-                       
+
     using Timestamp=std::chrono::time_point<std::chrono::high_resolution_clock>;
     /// timestamp indicating how old the dependendent data might
     /// be. Used in CachedTensorOp to determine when to invalidate the
     /// cache
-    virtual Timestamp timestamp() const=0;
+    virtual civita::ITensor::Timestamp timestamp() const=0;
 
     /// arguments relevant for tensor expressions, not always meaningful. Exception thrown if not.
     struct Args
@@ -133,6 +133,25 @@ namespace civita
 
   inline std::ostream& operator<<(std::ostream& o, const ITensor::Timestamp& t)
   {return o<<ITensor::Timestamp::clock::to_time_t(t);}
+
+  inline void printAtHCIndex(const ITensor& t, std::ostream& o, std::size_t hcIdx)
+    {
+      auto& hc=t.hypercube();
+      auto splitIndex=hc.splitIndex(hcIdx);
+      o<<"[";
+      for (size_t i=0; i<splitIndex.size(); ++i)
+        o<<civita::str(hc.xvectors[i][splitIndex[i]], hc.xvectors[i].dimension.units)<<" ";
+      o<<"]="<<t.atHCIndex(hcIdx);
+    }
+
+  inline void printAtIndex(const ITensor& t, std::ostream& o, std::size_t idx)
+    {
+      if (t.index().empty())
+        printAtHCIndex(t,o,idx);
+      else
+        printAtHCIndex(t,o,t.index()[idx]);
+    }
+    
 }
 
 #endif

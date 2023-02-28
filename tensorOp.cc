@@ -18,6 +18,7 @@
 */
 
 #include "tensorOp.h"
+#include <algorithm>
 #include <exception>
 #include <set>
 using namespace std;
@@ -44,7 +45,20 @@ namespace civita
       hypercube(Hypercube());
     set<size_t> indices;
     if (arg1) indices.insert(arg1->index().begin(), arg1->index().end());
-    if (arg2) indices.insert(arg2->index().begin(), arg2->index().end());
+    if (arg2 && !arg2->index().empty())
+      {
+        set<size_t> indices2;
+        indices2.insert(arg2->index().begin(), arg2->index().end());
+        if (indices.empty())
+          indices=move(indices2);
+        else // find set intersection
+          for (auto i=indices.begin(); i!=indices.end();)
+            {
+              auto j=i; i++;
+              if (!indices2.count(*j))
+                indices.erase(j);
+            }
+      }
     m_index=indices;
   }
 
