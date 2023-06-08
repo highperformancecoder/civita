@@ -266,32 +266,6 @@ namespace civita
     Timestamp timestamp() const override {return arg->timestamp();}
   };
 
-//  /// If a rank 1 argument, sort by the value of the argument
-//  class SortByValue: public CachedTensorOp
-//  {
-//    TensorPtr arg;
-//    ravel::HandleSort::Order order;
-//  public:
-//    SortByValue(ravel::HandleSort::Order order): order(order) {}
-//    void setArgument(const TensorPtr& a,const std::string& ={},double=0) override {
-//      if (a->rank()!=1)
-//        throw std::runtime_error("Sort by Value only applicable for rank 1 tensors");
-//      else
-//        arg=a;
-//      cachedResult.hypercube(a->hypercube()); // no data, unsorted
-//    }
-//    void computeTensor() const override;
-//    Timestamp timestamp() const override {return arg->timestamp();}
-//    const Hypercube& hypercube() const override {
-//      if (timestamp()>m_timestamp) computeTensor();
-//      return cachedResult.hypercube();
-//    }
-//    std::size_t size() const override {
-//      if (timestamp()>m_timestamp) computeTensor();
-//      return cachedResult.size();
-//    }
-//  };
-
   class SpreadBase: public ITensor
   {
   protected:

@@ -458,38 +458,6 @@ namespace civita
   }
 
 
-//  void SortByValue::computeTensor() const 
-//  {
-//    assert(arg->rank()==1);
-//    vector<size_t> idx; idx.reserve(arg->size());
-//    vector<double> tmp;
-//    for (size_t i=0; i<arg->size(); ++i)
-//      {
-//        idx.push_back(i);
-//        tmp.push_back((*arg)[i]);
-//      }
-//    switch (order)
-//      {
-//      case ravel::HandleSort::forward:
-//        sort(idx.begin(), idx.end(), [&](size_t i, size_t j){return tmp[i]<tmp[j];});
-//        break;
-//      case ravel::HandleSort::reverse:
-//        sort(idx.begin(), idx.end(), [&](size_t i, size_t j){return tmp[i]>tmp[j];});
-//        break;
-//      default:
-//        break;
-//      }
-//    // reorder labels
-//    auto hc=arg->hypercube();
-//    XVector xv(hc.xvectors[0]);
-//    for (size_t i=0; i<idx.size(); ++i)
-//      xv[i]=hc.xvectors[0][idx[i]];
-//    hc.xvectors[0].swap(xv);
-//    cachedResult.hypercube(move(hc));
-//    for (size_t i=0; i<idx.size(); ++i)
-//      cachedResult[i]=tmp[idx[i]];
-//  }
-
   void SpreadOverHC::setArgument(const TensorPtr& a,const Args&) {
     if (a->rank()!=rank())
       throw std::runtime_error("mismatch of dimensions");
