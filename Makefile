@@ -1,5 +1,8 @@
 .SUFFIXES: .d .h .cc .o .jcd
 
+HOST=$(shell hostname)
+OS=$(shell uname)
+
 ifdef DEBUG
 OPT=-g
 else
@@ -12,6 +15,7 @@ endif
 
 ifdef MXE
 MXE_32bit=$(shell if which i686-w64-mingw32.static-g++>&/dev/null; then echo 1; fi)
+
 MXE_64bit=$(shell if which x86_64-w64-mingw32.static-g++>&/dev/null; then echo 1; fi)
 
 ifeq ($(MXE_32bit),1)
@@ -34,6 +38,10 @@ endif
 
 OBJS=hypercube.o index.o interpolateHypercube.o tensorOp.o xvector.o
 FLAGS+=-I. -I$(HOME)/usr/include -I/usr/local/include 
+
+ifeq ($(OS),Darwin)
+FLAGS+=-std=c++17
+endif
 
 ifndef CLASSDESC
 ifeq ($(shell if which classdesc>&/dev/null; then echo 1; fi),1)
