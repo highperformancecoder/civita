@@ -10,6 +10,10 @@ ifdef FPIC
 OPT+=-fPIC
 endif
 
+ifdef GCOV
+FLAGS+=-fprofile-arcs -ftest-coverage
+endif
+
 ifdef MXE
 MXE_32bit=$(shell if which i686-w64-mingw32.static-g++>&/dev/null; then echo 1; fi)
 MXE_64bit=$(shell if which x86_64-w64-mingw32.static-g++>&/dev/null; then echo 1; fi)
@@ -29,7 +33,7 @@ FLAGS=-DWIN32
 else
 CC=gcc
 CPLUSPLUS=g++
-FLAGS=-isystem /usr/local/include -isystem /opt/local/include
+FLAGS+=-isystem /usr/local/include -isystem /opt/local/include
 endif
 
 OBJS=hypercube.o index.o interpolateHypercube.o tensorOp.o xvector.o
