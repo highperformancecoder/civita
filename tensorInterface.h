@@ -132,7 +132,13 @@ namespace civita
   };
 
   inline std::ostream& operator<<(std::ostream& o, const ITensor::Timestamp& t)
-  {return o<<ITensor::Timestamp::clock::to_time_t(t);}
+  {
+     return o<<std::chrono::system_clock::to_time_t
+      // use now() to convert between clock types
+      (std::chrono::system_clock::now()+
+       std::chrono::duration_cast<std::chrono::system_clock::duration>
+       ((t-ITensor::Timestamp::clock::now())));
+   }
 
   inline void printAtHCIndex(const ITensor& t, std::ostream& o, std::size_t hcIdx)
     {
