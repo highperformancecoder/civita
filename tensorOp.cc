@@ -50,7 +50,7 @@ namespace civita
         set<size_t> indices2;
         indices2.insert(arg2->index().begin(), arg2->index().end());
         if (indices.empty())
-          indices=move(indices2);
+          indices=std::move(indices2);
         else // find set intersection
           for (auto i=indices.begin(); i!=indices.end();)
             {
@@ -208,7 +208,7 @@ namespace civita
     for (auto i=xv.begin(); i!=xv.end(); ++i)
       if (i->name==args.dimension)
         dimension=i-xv.begin();
-    hypercube(move(hc));
+    hypercube(std::move(hc));
   }
 
   
@@ -365,7 +365,7 @@ namespace civita
         }
 
     assert(hc.rank()==arg->rank());
-    hypercube(move(hc));
+    hypercube(std::move(hc));
     // permute the index vector
     map<size_t, size_t> pi;
     for (size_t i=0; i<arg->index().size(); ++i)
@@ -423,7 +423,7 @@ namespace civita
 
   void PermuteAxis::setPermutation(vector<size_t>&& p)
   {
-    m_permutation=move(p);
+    m_permutation=std::move(p);
     auto& xv=m_hypercube.xvectors[m_axis];
     xv.clear();
     auto& axv=arg->hypercube().xvectors[m_axis];
@@ -561,7 +561,7 @@ namespace civita
     hc.xvectors.emplace_back(opArgs.dimension);
     for (size_t i=0; i<args.size(); ++i)
       hc.xvectors.back().push_back(to_string(i));
-    hypercube(move(hc));
+    hypercube(std::move(hc));
 
     if (hypercube().logNumElements()<log(numeric_limits<size_t>::max())) // make sure we can fit in a size_t
       {
