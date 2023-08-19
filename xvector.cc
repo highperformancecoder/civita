@@ -203,7 +203,13 @@ namespace civita
       case Dimension::value:
         return x.value-y.value;
       case Dimension::time:
-        return 1e-9*(x.time-y.time).total_nanoseconds();
+        {
+          auto d=x.time-y.time;
+          auto cutoff=hours(1000000);
+          if (d<cutoff && d>-cutoff) // arbitrary cutoff, but well below overflow - million hours = a bit over a century
+            return 1e-9*d.total_nanoseconds();
+          return 1e-6*d.total_microseconds();
+        }
       }
     assert(false); 
     return 0; // should not be here
