@@ -167,7 +167,7 @@ namespace civita
               // default case - delegate to std::time_input_facet
               istringstream is(s);
               is.imbue(locale(is.getloc(), new boost::posix_time::time_input_facet(dim.units)));
-              ptime pt;
+              ptime pt(not_a_date_time);
               is>>pt;
               if (pt.is_special())
                 throw InvalidDate(s, dim.units);
