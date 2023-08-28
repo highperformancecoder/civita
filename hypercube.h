@@ -51,6 +51,9 @@ namespace civita
     /// logarithm of number of elements in the hypercube
     double logNumElements() const;
       
+    /// checks that the dimension names are distinct
+    bool dimsAreDistinct() const;
+
     /// set the dimensions. 
     const std::vector<unsigned>& dims(const std::vector<unsigned>& d);
     

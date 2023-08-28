@@ -73,6 +73,16 @@ namespace civita
       r+=log(i.size());
     return r;
   }
+
+  bool Hypercube::dimsAreDistinct() const
+  {
+    set<string> names;
+    for (auto& xv: xvectors)
+      if (!names.insert(xv.name).second)
+        return false;
+    return true;
+  }
+
   
   /// split lineal index into components along each dimension
   vector<size_t> Hypercube::splitIndex(size_t i) const
