@@ -412,9 +412,10 @@ namespace civita
     arg=a;
     hypercube(arg->hypercube());
     m_index=arg->index();
-    for (m_axis=0; m_axis<m_hypercube.xvectors.size(); ++m_axis)
-      if (m_hypercube.xvectors[m_axis].name==args.dimension)
-        break;
+    if (m_hypercube.xvectors.size()!=1) // ignore named axis for vectors
+      for (m_axis=0; m_axis<m_hypercube.xvectors.size(); ++m_axis)
+        if (m_hypercube.xvectors[m_axis].name==args.dimension)
+          break;
     if (m_axis==m_hypercube.xvectors.size())
       throw runtime_error("axis "+args.dimension+" not found");
     for (size_t i=0; i<m_hypercube.xvectors[m_axis].size(); ++i)
