@@ -78,6 +78,19 @@ namespace civita
     return x.type<y.type;
   }
   
+  inline bool operator<=(const any& x, const any& y) {
+    if (x.type==y.type)
+      switch (x.type)   {
+      case Dimension::string: return x.string<=y.string;
+      case Dimension::time: return x.time<=y.time;
+      case Dimension::value: return x.value<=y.value;
+      }
+    return x.type<y.type;
+  }
+  
+  inline bool operator>(const any& x, const any& y) {return !(x<=y);}
+  inline bool operator>=(const any& x, const any& y) {return !(x<y);}
+  
   inline bool operator==(const any& x, const any& y) {
     if (x.type!=y.type) return false;
     switch (x.type)   {
