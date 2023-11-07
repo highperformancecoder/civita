@@ -74,7 +74,7 @@ namespace civita
 
     const_iterator begin() const {return const_cast<ITensorVal*>(this)->begin();}
     const_iterator end() const {return begin()+size();}
-    iterator begin() {return &((*this)[0]);}
+    iterator begin() {return size()? &((*this)[0]): nullptr;}
     iterator end() {return begin()+size();}
   };
   
