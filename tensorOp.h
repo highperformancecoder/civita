@@ -111,6 +111,7 @@ namespace civita
   /// any missing entry (NaNs)
   class ReductionOp: public ReduceAllOp
   {
+  protected:
     std::size_t dimension;
     struct SOI {std::size_t index, dimIndex;};
     std::map<std::size_t, std::vector<SOI>> sumOverIndices;
@@ -189,7 +190,7 @@ namespace civita
     double operator[](std::size_t i) const override {
       count=0; sqr=0;
       double av=ReductionOp::operator[](i)/count;
-      return sqrt(std::max(0.0, sqr/count-av*av));
+      return sqrt(std::max(0.0, sqr/count-av*av))*count/(count-1);
     }
   };
   
@@ -223,6 +224,7 @@ namespace civita
   /// corresponds to OLAP slice operation
   class Slice: public ITensor
   {
+  protected:
     std::size_t stride=1, split=1, sliceIndex=0;
     TensorPtr arg;
     std::vector<std::size_t> arg_index;
