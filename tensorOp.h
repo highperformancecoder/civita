@@ -189,8 +189,8 @@ namespace civita
     StdDeviation(): ReductionOp([this](double& x, double y,std::size_t){x+=y; sqr+=y*y; ++count;},0) {}
     double operator[](std::size_t i) const override {
       count=0; sqr=0;
-      double av=ReductionOp::operator[](i)/count;
-      return sqrt(std::max(0.0, sqr/count-av*av))*count/(count-1);
+      double sum=ReductionOp::operator[](i);
+      return sqrt(std::max(0.0, (sqr-sum*sum/count)/(count-1)));
     }
   };
   
