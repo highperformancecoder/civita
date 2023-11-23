@@ -29,7 +29,7 @@ namespace civita
   {
     Hypercube() {}
     template <class T>
-    Hypercube(const std::initializer_list<T>& d) {dims(std::vector<unsigned>(d.begin(),d.end()));}
+    Hypercube(const std::initializer_list<T>& d) {dims(d);}
     Hypercube(const std::vector<unsigned>& d) {dims(d);}
     Hypercube(const std::vector<XVector>& d): xvectors(d) {}
     Hypercube(std::vector<XVector>&& d): xvectors(std::move(d)) {}
@@ -56,7 +56,10 @@ namespace civita
 
     /// set the dimensions. 
     const std::vector<unsigned>& dims(const std::vector<unsigned>& d);
-    
+    template <class T>
+    const std::vector<unsigned>& dims(const std::initializer_list<T>& d)
+    {return dims(std::vector<unsigned>(d.begin(),d.end()));}
+   
     std::vector<std::string> dimLabels() const;
     
     /// split lineal index into components along each dimension

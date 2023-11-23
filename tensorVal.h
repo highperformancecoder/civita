@@ -113,6 +113,9 @@ namespace civita
       for (auto& j: x) data.push_back(j.second);
       return *this;
     }
+
+    // assign a dense data set. Note data is trimmed or padded to hypercube().numElements();
+    TensorVal& operator=(const std::vector<double>& x) {data=x; allocVal(); return *this;}
     
     double operator[](std::size_t i) const override {return data.empty()? 0: data[i];}
     double& operator[](std::size_t i) override {return data[i];}

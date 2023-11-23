@@ -187,6 +187,15 @@ namespace civita
     return r;
   }
 
+  const Hypercube& CachedTensorOp::hypercube() const
+  {
+    if (m_timestamp<timestamp()) {
+      computeTensor();
+      m_timestamp=Timestamp::clock::now();
+    }
+    return cachedResult.hypercube();
+  }
+  
   double CachedTensorOp::operator[](size_t i) const
   {
     assert(i<size());
@@ -214,7 +223,8 @@ namespace civita
   
   void Scan::computeTensor() const
   {
-    if (dimension<rank())
+    if (!arg) return;
+    if (dimension<arg->rank())
       {
         auto argDims=arg->hypercube().dims();
         size_t stride=1;
@@ -222,7 +232,7 @@ namespace civita
           stride*=argDims[j];
         if (argVal>=1 && argVal<argDims[dimension])
           // argVal is interpreted as the binning window. -ve argVal ignored
-          for (size_t i=0; i<hypercube().numElements(); i+=stride*argDims[dimension])
+          for (size_t i=0; i<cachedResult.hypercube().numElements(); i+=stride*argDims[dimension])
             for (size_t j=0; j<stride; ++j)
               for (size_t j1=0; j1<argDims[dimension]*stride; j1+=stride)
                 {
@@ -234,7 +244,7 @@ namespace civita
                     }
               }
         else // scan over whole dimension
-          for (size_t i=0; i<hypercube().numElements(); i+=stride*argDims[dimension])
+          for (size_t i=0; i<cachedResult.hypercube().numElements(); i+=stride*argDims[dimension])
             for (size_t j=0; j<stride; ++j)
               {
                 cachedResult[i+j]=arg->atHCIndex(i+j);
@@ -248,7 +258,7 @@ namespace civita
     else
       {
         cachedResult[0]=arg->atHCIndex(0);
-        for (size_t i=1; i<hypercube().numElements(); ++i)
+        for (size_t i=1; i<cachedResult.hypercube().numElements(); ++i)
           {
             cachedResult[i]=cachedResult[i-1];
             f(cachedResult[i], arg->atHCIndex(i), i);

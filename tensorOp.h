@@ -138,7 +138,7 @@ namespace civita
     const Index& index() const override {return cachedResult.index();}
     std::size_t size() const override {return cachedResult.size();}
     double operator[](std::size_t i) const override;
-    const Hypercube& hypercube() const override {return cachedResult.hypercube();}
+    const Hypercube& hypercube() const override;// {return cachedResult.hypercube();}
     const Hypercube& hypercube(const Hypercube& hc) override {return cachedResult.hypercube(hc);}
     const Hypercube& hypercube(Hypercube&& hc) override {return cachedResult.hypercube(std::move(hc));}
   };
