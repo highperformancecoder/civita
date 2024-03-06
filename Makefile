@@ -63,7 +63,7 @@ FLAGS+=-DCLASSDESC -I$(dir $(CLASSDESC))/../include
 endif
 
 ifdef AEGIS
-FLAGS+=-Werror -Wall -Wno-unused-local-typedefs -Wno-unused-variable -Wno-unused-function -Wno-unknown-pragmas
+FLAGS+=-Werror -Wall -Wno-unused-local-typedefs -Wno-unused-variable -Wno-unused-function -Wno-unknown-pragmas -Wno-unknown-warning-option
 ifeq ($(CPLUSPLUS),g++)
 FLAGS+=-Wno-restrict
 endif
