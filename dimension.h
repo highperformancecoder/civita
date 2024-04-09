@@ -52,9 +52,14 @@ namespace civita
     any()=default;
     any(const boost::posix_time::ptime& x): type(Dimension::time), time(x) {}
     any(const std::string& x): type(Dimension::string), string(x) {}
-    any(const double& x): type(Dimension::value), value(x) {}
+    any(const char* x): type(Dimension::string), string(x) {}
+    // compilers get confused between char* and ints, which is why we need this templated overload
+    template <class T>
+    any(T x, typename std::enable_if<std::is_integral<T>::value, int>::type dummy=0):
+      type(Dimension::value), value(x) {}
+    any(double x): type(Dimension::value), value(x) {}
     template <class T> any& operator=(const T&x) {return *this=any(x);}
-    // true if this is a default constructed objects
+    /// true if this is a default constructed object
     bool empty() const {return type==Dimension::string && string.empty();}
   };
 

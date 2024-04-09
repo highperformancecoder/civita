@@ -58,6 +58,10 @@ namespace civita
         return *this;
       }
 
+#if defined(__cplusplus) && __cplusplus >= 202002L
+      bool operator<=>(const Index&) const=default;
+#endif
+      
       /// return hypercube index corresponding to lineal index i 
       std::size_t operator[](std::size_t i) const {return index.empty()? i: index[i];}
       // invariant, should always be true
