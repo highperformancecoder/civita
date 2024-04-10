@@ -287,24 +287,11 @@ namespace civita
   class SpreadFirst: public SpreadBase
   {
   public:
-    void setSpreadDimensions(const Hypercube& hc) {
-      if (!arg) return;
-      numSpreadElements=hc.numElements();
-      m_hypercube=hc;
-      m_hypercube.xvectors.insert(m_hypercube.xvectors.end(), arg->hypercube().xvectors.begin(),
-                                  arg->hypercube().xvectors.end());
-      std::set<std::size_t> idx;
-      for (auto& i: arg->index())
-        for (std::size_t j=0; j<numSpreadElements; ++j)
-          {
-            checkCancel();
-            idx.insert(j+i*numSpreadElements);
-          }
-      m_index=idx;
-    }
-    
+    // hc's axes are prepended to that of arg, and arg's values spread along extra axes
+    // @param index specifies sparsity pattern along extra dimensions
+    void setSpreadDimensions(const Hypercube& hc, const Index& index={});
     double operator[](std::size_t i) const override {
-      if (arg) return (*arg)[i/numSpreadElements];
+      if (arg) return arg->atHCIndex(index()[i]/numSpreadElements);
       return nan("");
     }
   };
@@ -312,23 +299,11 @@ namespace civita
   class SpreadLast: public SpreadBase
   {
   public:
-    void setSpreadDimensions(const Hypercube& hc) {
-      if (!arg) return;
-      numSpreadElements=hc.numElements();
-      m_hypercube=arg->hypercube();
-      m_hypercube.xvectors.insert(m_hypercube.xvectors.end(), hc.xvectors.begin(), hc.xvectors.end());
-      std::set<std::size_t> idx;
-      for (auto& i: arg->index())
-        for (std::size_t j=0; j<numSpreadElements; ++j)
-          {
-            checkCancel();
-            idx.insert(i+j*arg->size());
-          }
-      m_index=idx;
-    }
-    
+    // hc's axes are appended to that of arg, and arg's values spread along extra axes
+    // @param index specifies sparsity pattern along extra dimensions
+    void setSpreadDimensions(const Hypercube& hc, const Index& index={});
     double operator[](std::size_t i) const override {
-      if (arg) return (*arg)[i%arg->size()];
+      if (arg) return arg->atHCIndex(index()[i]%numSpreadElements);
       return nan("");
     }
   };

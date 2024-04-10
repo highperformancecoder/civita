@@ -57,7 +57,8 @@ namespace civita
           for (auto i=indices.begin(); i!=indices.end(); checkCancel())
             {
               auto j=i; i++;
-              if (!indices2.count(*j))
+              // clearing indices completely causes all elements of the hypercube to be evaluated uselessly
+              if (!indices2.count(*j) && indices.size()>1)
                 indices.erase(j);
             }
       }
@@ -475,6 +476,52 @@ namespace civita
     return (*arg)[permutedIndex[i]];
   }
 
+  void SpreadFirst::setSpreadDimensions(const Hypercube& hc, const Index& index)
+  {
+    if (!arg) return;
+    if (hc.logNumElements()+hypercube().logNumElements()>64*log(2))
+      throw std::runtime_error("Maximum hypercube exceeded");
+    m_hypercube=hc;
+    m_hypercube.xvectors.insert(m_hypercube.xvectors.end(), arg->hypercube().xvectors.begin(),
+                                arg->hypercube().xvectors.end());
+    numSpreadElements=hc.numElements();
+    if (index.empty() && arg->index().empty())
+      {
+        m_index.clear();
+        return;
+      }
+      
+    std::set<std::size_t> idx;
+    size_t nIndex=index.empty()? numSpreadElements: index.size();
+    for (std::size_t i=0; i<arg->size(); ++i)
+      for (std::size_t j=0; j<nIndex; checkCancel(), ++j)
+        idx.insert(index[j]+arg->index()[i]*numSpreadElements);
+    m_index=idx;
+  }
+
+  void SpreadLast::setSpreadDimensions(const Hypercube& hc, const Index& index)
+  {
+    if (!arg) return;
+    if (hc.logNumElements()+hypercube().logNumElements()>64*log(2))
+      throw std::runtime_error("Maximum hypercube exceeded");
+    m_hypercube=hc;
+    m_hypercube.xvectors.insert(m_hypercube.xvectors.end(), arg->hypercube().xvectors.begin(),
+                                arg->hypercube().xvectors.end());
+    numSpreadElements=arg->hypercube().numElements();
+    if (index.empty() && arg->index().empty())
+      {
+        m_index.clear();
+        return;
+      }
+      
+    std::set<std::size_t> idx;
+    size_t nIndex=index.empty()? hc.numElements(): index.size();
+    for (std::size_t i=0; i<arg->size(); ++i)
+      for (std::size_t j=0; j<nIndex; checkCancel(), ++j)
+        idx.insert(arg->index()[i]+index[j]*numSpreadElements);
+    m_index=idx;
+  }
+    
 
   void SpreadOverHC::setArgument(const TensorPtr& a,const Args&) {
     if (a->rank()!=rank())

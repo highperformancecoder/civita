@@ -390,6 +390,80 @@ SUITE(TensorOps)
         }
     }
 
+   TEST(DenseSpreadFirst)
+     {
+       civita::SpreadFirst op;
+       auto arg=make_shared<TensorVal>(vector<unsigned>{2,3});
+       (*arg)=vector<double>{0,1,2,3,4,5};
+       op.setArgument(arg,{});
+       Hypercube hc;
+       hc.xvectors.emplace_back("back",Dimension(Dimension::value,""),vector<any>{1,2,3});
+       op.setSpreadDimensions(hc);
+       CHECK_EQUAL(arg->rank()+hc.rank(),op.rank());
+       CHECK_EQUAL(0,op.index().size());
+       CHECK_EQUAL(arg->size()*hc.numElements(), op.size());
+       vector<double> expected{0,0,0,1,1,1,2,2,2,3,3,3,4,4,4,5,5,5};
+       CHECK_EQUAL(expected.size(), op.size());
+       CHECK_ARRAY_EQUAL(expected, op, op.size());
+     }
+
+    TEST(SparseSpreadFirst)
+     {
+       civita::SpreadFirst op;
+       auto arg=make_shared<TensorVal>(vector<unsigned>{2,3});
+       (*arg)=map<size_t,double>{{0,0},{3,3},{4,4}};
+       op.setArgument(arg,{});
+       Hypercube hc;
+       hc.xvectors.emplace_back("back",Dimension(Dimension::value,""),vector<any>{1,2,3});
+       Index idx(set<size_t>{2});
+       op.setSpreadDimensions(hc,idx);
+       CHECK_EQUAL(arg->rank()+hc.rank(),op.rank());
+       CHECK_EQUAL(arg->index().size()*idx.size(),op.index().size());
+       vector<size_t> expectedIndex{2,11,14};
+       CHECK_EQUAL(expectedIndex.size(), op.index().size());
+       CHECK_ARRAY_EQUAL(expectedIndex, op.index(), op.size());
+       vector<double> expected{0,3,4};
+       CHECK_EQUAL(expected.size(), op.size());
+       CHECK_ARRAY_EQUAL(expected, op, op.size());
+     }
+
+     TEST(DenseSpreadLast)
+     {
+       civita::SpreadLast op;
+       auto arg=make_shared<TensorVal>(vector<unsigned>{2,3});
+       (*arg)=vector<double>{0,1,2,3,4,5};
+       op.setArgument(arg,{});
+       Hypercube hc;
+       hc.xvectors.emplace_back("back",Dimension(Dimension::value,""),vector<any>{1,2,3});
+       op.setSpreadDimensions(hc);
+       CHECK_EQUAL(arg->rank()+hc.rank(),op.rank());
+       CHECK_EQUAL(0,op.index().size());
+       CHECK_EQUAL(arg->size()*hc.numElements(), op.size());
+       vector<double> expected{0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,3,4,5};
+       CHECK_EQUAL(expected.size(), op.size());
+       CHECK_ARRAY_EQUAL(expected, op, op.size());
+     }
+
+    TEST(SparseSpreadLast)
+     {
+       civita::SpreadLast op;
+       auto arg=make_shared<TensorVal>(vector<unsigned>{2,3});
+       (*arg)=map<size_t,double>{{0,0},{3,3},{4,4}};
+       op.setArgument(arg,{});
+       Hypercube hc;
+       hc.xvectors.emplace_back("back",Dimension(Dimension::value,""),vector<any>{1,2,3});
+       Index idx(set<size_t>{2});
+       op.setSpreadDimensions(hc,idx);
+       CHECK_EQUAL(arg->rank()+hc.rank(),op.rank());
+       CHECK_EQUAL(arg->index().size()*idx.size(),op.index().size());
+       vector<size_t> expectedIndex{12,15,16};
+       CHECK_EQUAL(expectedIndex.size(), op.index().size());
+       CHECK_ARRAY_EQUAL(expectedIndex, op.index(), op.size());
+       vector<double> expected{0,3,4};
+       CHECK_EQUAL(expected.size(), op.size());
+       CHECK_ARRAY_EQUAL(expected, op, op.size());
+     }
+
 
 
 }
