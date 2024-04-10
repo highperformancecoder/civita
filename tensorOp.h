@@ -296,7 +296,10 @@ namespace civita
       std::set<std::size_t> idx;
       for (auto& i: arg->index())
         for (std::size_t j=0; j<numSpreadElements; ++j)
-          idx.insert(j+i*numSpreadElements);
+          {
+            checkCancel();
+            idx.insert(j+i*numSpreadElements);
+          }
       m_index=idx;
     }
     
@@ -317,7 +320,10 @@ namespace civita
       std::set<std::size_t> idx;
       for (auto& i: arg->index())
         for (std::size_t j=0; j<numSpreadElements; ++j)
-          idx.insert(i+j*arg->size());
+          {
+            checkCancel();
+            idx.insert(i+j*arg->size());
+          }
       m_index=idx;
     }
     

@@ -25,6 +25,7 @@
 #ifndef CLASSDESC_ACCESS
 #define CLASSDESC_ACCESS(x)
 #endif
+#include <atomic>
 #include <chrono>
 #include <iostream>
 #include <set>
@@ -123,12 +124,24 @@ namespace civita
                               const std::vector<TensorPtr>& a2,
                               const ITensor::Args& args={"",0})
     {setArguments(a1.empty()? TensorPtr(): a1[0], a2.empty()? TensorPtr(): a2[0], args);}
+
+    struct Cancelled: public std::exception {
+      const char* what() const noexcept override {return "civita cancelled";}
+    };
    
+    /// Can be used to terminate long running computations from another thread.
+    /// @param v true to cancel the computation, false to reset the cancel condition
+    /// @throw Cancelled will be thrown from the cancelled thread
+    /// Note - setting this to true will cancel all civita computations in all threads
+    static void cancel(bool v) {s_cancel=v;}
+    
   protected:
     Hypercube m_hypercube;
     Index m_index;
+    static std::atomic<bool> s_cancel;
     void notImpl() const
     {throw std::runtime_error("setArgument(s) variant not implemented");}
+    void checkCancel() const {if (s_cancel.load()) throw Cancelled();}
   };
 
   inline std::ostream& operator<<(std::ostream& o, const ITensor::Timestamp& t)

@@ -29,6 +29,8 @@ using namespace std;
 
 namespace civita
 {
+  std::atomic<bool> ITensor::s_cancel{false};
+  
   void BinOp::setArguments(const TensorPtr& a1, const TensorPtr& a2, const Args&)
   {
     arg1=a1; arg2=a2;
@@ -52,7 +54,7 @@ namespace civita
         if (indices.empty())
           indices=std::move(indices2);
         else // find set intersection
-          for (auto i=indices.begin(); i!=indices.end();)
+          for (auto i=indices.begin(); i!=indices.end(); checkCancel())
             {
               auto j=i; i++;
               if (!indices2.count(*j))
@@ -106,7 +108,7 @@ namespace civita
   double ReduceAllOp::operator[](size_t) const
   {
     double r=init;
-    for (size_t i=0; i<arg->size(); ++i)
+    for (size_t i=0; i<arg->size(); checkCancel(), ++i)
       {
         double x=(*arg)[i];
         if (!isnan(x)) f(r,x,i);
@@ -131,7 +133,7 @@ namespace civita
             xv.erase(xv.begin()+dimension);
             // compute index - enter index elements that have any in the argument
             set<size_t> indices;
-            for (size_t i=0; i<arg->size(); ++i)
+            for (size_t i=0; i<arg->size(); checkCancel(), ++i)
               {
                 auto splitIdx=ahc.splitIndex(arg->index()[i]);
                 SOI soi{i,splitIdx[dimension]};
@@ -167,7 +169,7 @@ namespace civita
         auto quotRem=ldiv(i, stride); // quotient and remainder calc in one hit
         auto start=quotRem.quot*stride*argDims[dimension] + quotRem.rem;
         assert(stride*argDims[dimension]>0);
-        for (size_t j=0; j<argDims[dimension]; ++j)
+        for (size_t j=0; j<argDims[dimension]; checkCancel(), ++j)
           {
             double x=arg->atHCIndex(j*stride+start);
             if (!isnan(x)) f(r,x,j);
@@ -180,6 +182,7 @@ namespace civita
         if (soi!=sumOverIndices.end())
           for (auto j: soi->second)
             {
+              checkCancel();
               double x=(*arg)[j.index];
               if (!isnan(x)) f(r,x,j.dimIndex);
             }
@@ -238,17 +241,15 @@ namespace civita
                 {
                   size_t k=i+j+max(ssize_t(0), ssize_t(j1-ssize_t(argVal-1)*stride));
                   cachedResult[i+j+j1]=arg->atHCIndex(i+j+j1);
-                  for (; k<i+j+j1; k+=stride)
-                    {
-                      f(cachedResult[i+j+j1], arg->atHCIndex(k), k);
-                    }
+                  for (; k<i+j+j1; checkCancel(), k+=stride)
+                    f(cachedResult[i+j+j1], arg->atHCIndex(k), k);
               }
         else // scan over whole dimension
           for (size_t i=0; i<cachedResult.hypercube().numElements(); i+=stride*argDims[dimension])
             for (size_t j=0; j<stride; ++j)
               {
                 cachedResult[i+j]=arg->atHCIndex(i+j);
-                for (size_t k=i+j+stride; k<i+j+stride*argDims[dimension]; k+=stride)
+                for (size_t k=i+j+stride; k<i+j+stride*argDims[dimension]; checkCancel(), k+=stride)
                   {
                     cachedResult[k] = cachedResult[k-stride];
                     f(cachedResult[k], arg->atHCIndex(k), k);
@@ -258,7 +259,7 @@ namespace civita
     else
       {
         cachedResult[0]=arg->atHCIndex(0);
-        for (size_t i=1; i<cachedResult.hypercube().numElements(); ++i)
+        for (size_t i=1; i<cachedResult.hypercube().numElements(); checkCancel(), ++i)
           {
             cachedResult[i]=cachedResult[i-1];
             f(cachedResult[i], arg->atHCIndex(i), i);
@@ -302,7 +303,7 @@ namespace civita
         // set up index vector
         auto& ahc=arg->hypercube();
         map<size_t, size_t> ai;
-        for (size_t k=0; k<arg->index().size(); ++k)
+        for (size_t k=0; k<arg->index().size(); checkCancel(), ++k)
           {
             auto splitIdx=ahc.splitIndex(arg->index()[k]);
             if (splitIdx[splitAxis]==sliceIndex)
@@ -316,7 +317,11 @@ namespace civita
         arg_index.resize(ai.size());
         // convert into lineal addressing
         size_t j=0;
-        for (auto& k: ai) arg_index[j++]=k.second;
+        for (auto& k: ai)
+          {
+            checkCancel();
+            arg_index[j++]=k.second;
+          }
       }
   }
 
@@ -346,7 +351,7 @@ namespace civita
     map<string,size_t> pMap;
     map<string,XVector> xVectorMap;
     auto& ahc=arg->hypercube();
-    for (size_t i=0; i<ahc.xvectors.size(); ++i)
+    for (size_t i=0; i<ahc.xvectors.size(); checkCancel(), ++i)
       {
         pMap[ahc.xvectors[i].name]=i;
         xVectorMap[ahc.xvectors[i].name]=ahc.xvectors[i];
@@ -366,13 +371,15 @@ namespace civita
         hc.xvectors.push_back(xVectorMap[i]);
       }
     // add remaining axes to permutation in found order
-    for (size_t i=0; i<ahc.xvectors.size(); ++i)
-      if (!axisSet.count(ahc.xvectors[i].name))
-        {
-          invPermutation[i]=permutation.size();
-          permutation.push_back(i);
-          hc.xvectors.push_back(ahc.xvectors[i]);
-        }
+    for (size_t i=0; i<ahc.xvectors.size(); checkCancel(), ++i)
+      {
+        if (!axisSet.count(ahc.xvectors[i].name))
+          {
+            invPermutation[i]=permutation.size();
+            permutation.push_back(i);
+            hc.xvectors.push_back(ahc.xvectors[i]);
+          }
+      }
 
     assert(hc.rank()==arg->rank());
     hypercube(std::move(hc));
@@ -382,7 +389,7 @@ namespace civita
       {
         auto idx=arg->hypercube().splitIndex(arg->index()[i]);
         auto pidx=idx;
-        for (size_t j=0; j<idx.size(); ++j)
+        for (size_t j=0; j<idx.size(); checkCancel(), ++j)
           {
             assert(invPermutation.count(j));
             assert(invPermutation[j]<pidx.size());
@@ -403,7 +410,7 @@ namespace civita
   {
     auto idx=hypercube().splitIndex(index);
     auto pidx=idx;
-    for (size_t i=0; i<idx.size(); ++i)
+    for (size_t i=0; i<idx.size(); checkCancel(), ++i)
       pidx[permutation[i]]=idx[i];
     return arg->hypercube().linealIndex(pidx);
   }
@@ -439,12 +446,12 @@ namespace civita
     xv.clear();
     auto& axv=arg->hypercube().xvectors[m_axis];
     for (auto i: m_permutation)
-      xv.push_back(axv[i]);
+      checkCancel(), xv.push_back(axv[i]);
     map<unsigned,unsigned> reverseIndex;
-    for (size_t i=0; i<m_permutation.size(); ++i)
+    for (size_t i=0; i<m_permutation.size(); checkCancel(), ++i)
       reverseIndex[m_permutation[i]]=i;
     map<size_t,size_t> indices;
-    for (size_t i=0; i<arg->index().size(); ++i)
+    for (size_t i=0; i<arg->index().size(); checkCancel(), ++i)
       {
         auto splitted=arg->hypercube().splitIndex(arg->index()[i]);
         auto ri=reverseIndex.find(splitted[m_axis]);
@@ -453,7 +460,7 @@ namespace civita
       }
     m_index=indices;
     permutedIndex.clear();
-    for (auto& i: indices) permutedIndex.push_back(i.second);
+    for (auto& i: indices) checkCancel(), permutedIndex.push_back(i.second);
   }
   
   double PermuteAxis::operator[](size_t i) const
@@ -483,9 +490,9 @@ namespace civita
     for (size_t i=0; i<a->rank(); ++i)
       {
         map<any,size_t> srcIndices;
-        for (size_t j=0; j<a->hypercube().xvectors[i].size(); ++j)
+        for (size_t j=0; j<a->hypercube().xvectors[i].size(); checkCancel(), ++j)
           srcIndices[a->hypercube().xvectors[i][j]]=j;
-        for (size_t j=0; j<hypercube().xvectors[i].size(); ++j)
+        for (size_t j=0; j<hypercube().xvectors[i].size(); checkCancel(), ++j)
           {
             auto it=srcIndices.find(hypercube().xvectors[i][j]);
             if (it!=srcIndices.end())
@@ -498,7 +505,7 @@ namespace civita
 
     double SpreadOverHC::operator[](size_t idx) const {
       auto splitIdx=hypercube().splitIndex(index()[idx]);
-      for (size_t i=0; i<splitIdx.size(); ++i)
+      for (size_t i=0; i<splitIdx.size(); checkCancel(), ++i)
         {
           splitIdx[i]=permutations[i][splitIdx[i]];
           if (splitIdx[i]>=arg->hypercube().xvectors[i].size())
@@ -539,7 +546,7 @@ namespace civita
         for (auto& i: args)
           {
             for (auto j: i->index())
-              tmp_index.insert(j);
+              checkCancel(), tmp_index.insert(j);
           }
         m_index=tmp_index;
       }
@@ -586,11 +593,11 @@ namespace civita
             for (size_t i=0; i<args.size(); ++i)
               {
                 if (args[i]->index().empty())
-                  for (size_t j=0; j<args[i]->size(); ++j)
+                  for (size_t j=0; j<args[i]->size(); checkCancel(), ++j)
                     tmp_index.insert(i*sliceSize+j);
                 else
                   for (auto j: args[i]->index())
-                    tmp_index.insert(i*sliceSize+j);
+                    checkCancel(), tmp_index.insert(i*sliceSize+j);
               }
             m_index=std::move(tmp_index);
           }
