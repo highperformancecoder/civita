@@ -161,13 +161,15 @@ namespace civita
   class Min: public civita::ReductionOp
   {
   public:
-    Min(): civita::ReductionOp([](double& x, double y,std::size_t){if (y<x) x=y;},std::numeric_limits<double>::max()){}
+    /// comparisons with NaN are always false - hence result is always finite unless no data
+    Min(): civita::ReductionOp([](double& x, double y,std::size_t){if (!(y>=x)) x=y;},nan("")){}
    };
   /// calculate the maximum along an axis or whole tensor
   class Max: public civita::ReductionOp
   {
   public:
-    Max(): civita::ReductionOp([](double& x, double y,std::size_t){if (y>x) x=y;},-std::numeric_limits<double>::max()){}
+    /// comparisons with NaN are always false - hence result is always finite unless no data
+    Max(): civita::ReductionOp([](double& x, double y,std::size_t){if (!(y<=x)) x=y;},nan("")){}
    };
 
   /// calculates the average along an axis or whole tensor
