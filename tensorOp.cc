@@ -476,7 +476,7 @@ namespace civita
     return (*arg)[permutedIndex[i]];
   }
 
-  void SpreadFirst::setSpreadDimensions(const Hypercube& hc, const Index& index)
+  void SpreadFirst::setSpreadDimensions(const Hypercube& hc)
   {
     if (!arg) return;
     if (hc.logNumElements()+hypercube().logNumElements()>64*log(2))
@@ -485,21 +485,10 @@ namespace civita
     m_hypercube.xvectors.insert(m_hypercube.xvectors.end(), arg->hypercube().xvectors.begin(),
                                 arg->hypercube().xvectors.end());
     numSpreadElements=hc.numElements();
-    if (index.empty() && arg->index().empty())
-      {
-        m_index.clear();
-        return;
-      }
-      
-    std::set<std::size_t> idx;
-    size_t nIndex=index.empty()? numSpreadElements: index.size();
-    for (std::size_t i=0; i<arg->size(); ++i)
-      for (std::size_t j=0; j<nIndex; checkCancel(), ++j)
-        idx.insert(index[j]+arg->index()[i]*numSpreadElements);
-    m_index=idx;
+    if (hc.rank()) m_index.clear();
   }
 
-  void SpreadLast::setSpreadDimensions(const Hypercube& hc, const Index& index)
+  void SpreadLast::setSpreadDimensions(const Hypercube& hc)
   {
     if (!arg) return;
     if (hc.logNumElements()+hypercube().logNumElements()>64*log(2))
@@ -508,18 +497,7 @@ namespace civita
     m_hypercube.xvectors.insert(m_hypercube.xvectors.end(), arg->hypercube().xvectors.begin(),
                                 arg->hypercube().xvectors.end());
     numSpreadElements=arg->hypercube().numElements();
-    if (index.empty() && arg->index().empty())
-      {
-        m_index.clear();
-        return;
-      }
-      
-    std::set<std::size_t> idx;
-    size_t nIndex=index.empty()? hc.numElements(): index.size();
-    for (std::size_t i=0; i<arg->size(); ++i)
-      for (std::size_t j=0; j<nIndex; checkCancel(), ++j)
-        idx.insert(arg->index()[i]+index[j]*numSpreadElements);
-    m_index=idx;
+    if (hc.rank()) m_index.clear();
   }
     
 

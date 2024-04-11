@@ -290,8 +290,7 @@ namespace civita
   {
   public:
     // hc's axes are prepended to that of arg, and arg's values spread along extra axes
-    // @param index specifies sparsity pattern along extra dimensions
-    void setSpreadDimensions(const Hypercube& hc, const Index& index={});
+    void setSpreadDimensions(const Hypercube& hc);
     double operator[](std::size_t i) const override {
       if (arg) return arg->atHCIndex(index()[i]/numSpreadElements);
       return nan("");
@@ -302,8 +301,7 @@ namespace civita
   {
   public:
     // hc's axes are appended to that of arg, and arg's values spread along extra axes
-    // @param index specifies sparsity pattern along extra dimensions
-    void setSpreadDimensions(const Hypercube& hc, const Index& index={});
+    void setSpreadDimensions(const Hypercube& hc);
     double operator[](std::size_t i) const override {
       if (arg) return arg->atHCIndex(index()[i]%numSpreadElements);
       return nan("");
