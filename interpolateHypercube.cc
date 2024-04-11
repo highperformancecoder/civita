@@ -100,11 +100,11 @@ namespace civita
     // Now we're sure rotation is a permutation
 #endif
     if (index().empty())
-      for (size_t i=0; i<size(); ++i)
+      for (size_t i=0; i<size(); checkCancel(), ++i)
         weightedIndices.push_back(bodyCentredNeighbourhood(i));
     else
       for (auto i: index())
-        weightedIndices.push_back(bodyCentredNeighbourhood(i));
+        checkCancel(), weightedIndices.push_back(bodyCentredNeighbourhood(i));
   }
 
   void InterpolateHC::sortAndAdd(const XVector& xv)

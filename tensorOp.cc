@@ -493,13 +493,41 @@ namespace civita
     if (!arg) return;
     if (hc.logNumElements()+hypercube().logNumElements()>64*log(2))
       throw std::runtime_error("Maximum hypercube exceeded");
-    m_hypercube=hc;
-    m_hypercube.xvectors.insert(m_hypercube.xvectors.end(), arg->hypercube().xvectors.begin(),
-                                arg->hypercube().xvectors.end());
+    m_hypercube=arg->hypercube();
+    m_hypercube.xvectors.insert(m_hypercube.xvectors.end(), hc.xvectors.begin(),
+                                hc.xvectors.end());
     numSpreadElements=arg->hypercube().numElements();
     if (hc.rank()) m_index.clear();
   }
-    
+  
+  void SpreadFirst::setIndex()
+  {
+    if (!arg) return;
+    auto& aIdx=arg->index();
+    if (arg->index().empty()) return;
+    if (numSpreadElements==1) {m_index=aIdx; return;}
+    set<size_t> idx;
+    for (auto i: aIdx)
+      for (auto j=0; j<numSpreadElements; checkCancel(), ++j)
+        idx.insert(j+i*numSpreadElements);
+    m_index=idx;
+  }
+
+  void SpreadLast::setIndex()
+  {
+    if (!arg) return;
+    auto& aIdx=arg->index();
+    if (arg->index().empty()) return;
+    size_t numToSpread=1;
+    set<size_t> idx;
+    for (auto i=arg->rank(); i<rank(); ++i) numToSpread*=m_hypercube.xvectors[i].size();
+    if (numToSpread==1) {m_index=aIdx; return;}
+    for (auto i=0; i<numToSpread; ++i)
+      for (auto j: aIdx)
+        checkCancel(), idx.insert(j+i*numSpreadElements);
+    m_index=idx;
+  }
+
 
   void SpreadOverHC::setArgument(const TensorPtr& a,const Args&) {
     if (a->rank()!=rank())

@@ -123,7 +123,17 @@ namespace civita
           extraDims.emplace_back(xvector);
         else
           {
-            if (intersection)
+            if (xvector.dimension.type==Dimension::string)
+              {
+                // compute the intersection of the two x-vectors.
+                set<any, AnyLess> xvectorAsSet(xvector.begin(), xvector.end());
+                for (auto i=xvectorData->second.begin(); i!=xvectorData->second.end(); )
+                  if (xvectorAsSet.count(*i))
+                    ++i;
+                  else
+                    i=xvectorData->second.erase(i);
+              }
+            else if (intersection)
               {
                 if (xvectorData->second.empty())
                   {

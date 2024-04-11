@@ -295,6 +295,8 @@ namespace civita
       if (arg) return arg->atHCIndex(index()[i]/numSpreadElements);
       return nan("");
     }
+    // sets index vector based on spreading argument's index
+    void setIndex();
   };
 
   class SpreadLast: public SpreadBase
@@ -306,6 +308,9 @@ namespace civita
       if (arg) return arg->atHCIndex(index()[i]%numSpreadElements);
       return nan("");
     }
+    /// sets index vector based on spreading argument's index. Must be called after setSpreadDimensions and setArgument
+    /// only needs to be done if arg is sparse and hc.rank()>1
+    void setIndex();
   };
 
   /// spread the argument over the given hypercube. Entries in hypercube not in arg are NAN.
