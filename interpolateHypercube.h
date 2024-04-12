@@ -60,12 +60,23 @@ namespace civita
     /// the target index is not on the hypercube
     WeightedIndexVector bodyCentredNeighbourhood(std::size_t idx) const;
 
+    size_t maxInterpolateDimension;
   public:
+    /// interpolates the sub-hypercube given by the first maxInterpolateDimension axes.
+    /// if maxInterpolateDimension>=rank(), then the whole hypercube is interpolated
+    InterpolateHC(size_t maxInterpolateDimension=std::numeric_limits<size_t>::max()):
+      maxInterpolateDimension(maxInterpolateDimension) {}
     void setArgument(const TensorPtr& a, const ITensor::Args&) override;
     double operator[](std::size_t) const override;
     Timestamp timestamp() const override {return arg? arg->timestamp(): Timestamp();}
   };
-  
+
+  /// pivots the string dimensions to the end, interpolates over the non-string dimensions, then pivots back
+  class PivotedInterpolateHC: public Pivot
+  {
+  public:
+    void setArgument(const TensorPtr& a, const ITensor::Args&) override;
+  };
 }
 
 #endif

@@ -124,14 +124,15 @@ namespace civita
   
   double InterpolateHC::operator[](size_t idx) const
   {
-    if (idx<weightedIndices.size())
+    auto div=lldiv(idx,maxInterpolateDimension);
+    if (div.rem<weightedIndices.size())
       {
-        if (weightedIndices[idx].empty()) return nan("");
+        if (weightedIndices[div.rem].empty()) return nan("");
         double r=0;
-        for (const auto& i: weightedIndices[idx])
+        for (const auto& i: weightedIndices[div.rem])
           {
             assert(i.index<arg->hypercube().numElements());
-            r+=i.weight * arg->atHCIndex(i.index);
+            r+=i.weight * arg->atHCIndex(i.index+maxInterpolateDimension*div.quot);
           }
         return r;
       }
@@ -156,7 +157,7 @@ namespace civita
       {
         double weight=1;
         size_t idx=0;
-        for (size_t dim=0, stride=1; dim<rank(); stride*=argHC.xvectors[dim].size(), ++dim)
+        for (size_t dim=0, stride=1; dim<min(maxInterpolateDimension,rank()); stride*=argHC.xvectors[dim].size(), ++dim)
           {
             const auto& x=sortedArgHC[dim].first;
             assert(!x.empty());
@@ -203,4 +204,79 @@ namespace civita
     return r;
   }
 
+  void PivotedInterpolateHC::setArgument(const TensorPtr& a, const ITensor::Args&)
+  {
+    if (!a) return;
+    vector<string> initPivotOrder, finalPivotOrder, stringDims;
+    map<string, const XVector*> targetXVectors, argXVectors;
+    for (auto& i: a->hypercube().xvectors)
+      argXVectors[i.name]=&i;
+
+    TensorPtr chain=a;
+    // note hypercube is currently set with the target Hypercube to interpolate argument
+    for (auto& xv: hypercube().xvectors)
+      {
+        finalPivotOrder.push_back(xv.name);
+        targetXVectors[xv.name]=&xv;
+        auto& argXv=*argXVectors[xv.name];
+        if (xv==argXv)
+          stringDims.push_back(xv.name);
+        else if (xv.dimension.type==Dimension::string)
+          {
+            stringDims.push_back(xv.name);
+            // need to permute arguments a's arguments to match that of xv
+            vector<size_t> permutation;
+            map<any, size_t> argSlices;
+            for (size_t i=0; i<argXv.size(); ++i)
+              argSlices.emplace(argXv[i], i);
+            for (auto& i: xv)
+              {
+                auto slice=argSlices.find(i);
+                if (slice!=argSlices.end())
+                  permutation.push_back(slice->second);
+              }
+            if (permutation.empty())
+              {
+                m_index=set<unsigned>{0}; // axes do not match, no data
+                return;
+              }
+            auto permute=make_shared<PermuteAxis>();
+            permute->setArgument(chain,{argXv.name,0});
+            permute->setPermutation(permutation);
+            chain=std::move(permute);
+          }
+        else
+          initPivotOrder.push_back(xv.name);
+      }
+
+    size_t interpolateSize=initPivotOrder.size();
+    
+    initPivotOrder.insert(initPivotOrder.end(),stringDims.begin(),stringDims.end());
+    shared_ptr<Pivot> initPivot;
+    if (initPivotOrder!=finalPivotOrder)
+      {
+        initPivot=make_shared<Pivot>();
+        initPivot->setArgument(chain, {});
+        initPivot->setOrientation(initPivotOrder);
+        chain=std::move(initPivot);
+      }
+    
+    if (interpolateSize>0)
+      {
+        auto interpolate=make_shared<InterpolateHC>(interpolateSize);
+
+        Hypercube pivotedTargetHC;
+        // moved, because hypercube() recreated below
+        for (auto& i: initPivotOrder) pivotedTargetHC.xvectors.emplace_back(std::move(*targetXVectors[i]));
+        interpolate->hypercube(pivotedTargetHC);
+        interpolate->setArgument(chain,{});
+        Pivot::setArgument(interpolate,{}); // resets hypercube
+      }
+    else
+      Pivot::setArgument(chain, {});
+
+    if (initPivotOrder!=finalPivotOrder)
+      setOrientation(finalPivotOrder);
+  }
+  
 }
