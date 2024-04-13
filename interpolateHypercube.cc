@@ -105,6 +105,9 @@ namespace civita
     else
       for (auto i: index())
         checkCancel(), weightedIndices.push_back(bodyCentredNeighbourhood(i));
+    interpolateHCSize=1;
+    for (size_t dim=0; dim<min(maxInterpolateDimension, rank()); ++dim)
+      interpolateHCSize*=targetHC[dim].size();
   }
 
   void InterpolateHC::sortAndAdd(const XVector& xv)
@@ -124,7 +127,7 @@ namespace civita
   
   double InterpolateHC::operator[](size_t idx) const
   {
-    auto div=lldiv(idx,maxInterpolateDimension);
+    auto div=lldiv(idx,interpolateHCSize);
     if (div.rem<weightedIndices.size())
       {
         if (weightedIndices[div.rem].empty()) return nan("");
@@ -132,7 +135,7 @@ namespace civita
         for (const auto& i: weightedIndices[div.rem])
           {
             assert(i.index<arg->hypercube().numElements());
-            r+=i.weight * arg->atHCIndex(i.index+maxInterpolateDimension*div.quot);
+            r+=i.weight * arg->atHCIndex(i.index+interpolateHCSize*div.quot);
           }
         return r;
       }
@@ -252,10 +255,10 @@ namespace civita
     size_t interpolateSize=initPivotOrder.size();
     
     initPivotOrder.insert(initPivotOrder.end(),stringDims.begin(),stringDims.end());
-    shared_ptr<Pivot> initPivot;
+    //shared_ptr<Pivot> initPivot;
     if (initPivotOrder!=finalPivotOrder)
       {
-        initPivot=make_shared<Pivot>();
+        auto initPivot=make_shared<Pivot>();
         initPivot->setArgument(chain, {});
         initPivot->setOrientation(initPivotOrder);
         chain=std::move(initPivot);

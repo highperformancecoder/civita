@@ -60,7 +60,7 @@ namespace civita
     /// the target index is not on the hypercube
     WeightedIndexVector bodyCentredNeighbourhood(std::size_t idx) const;
 
-    size_t maxInterpolateDimension;
+    size_t maxInterpolateDimension, interpolateHCSize;
   public:
     /// interpolates the sub-hypercube given by the first maxInterpolateDimension axes.
     /// if maxInterpolateDimension>=rank(), then the whole hypercube is interpolated
