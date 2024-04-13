@@ -154,7 +154,6 @@ namespace civita
     // this point in interimHypercube space
     double sumWeight=0;
     WeightedIndexVector r;
-    auto argIndexVector=arg->index();
     // multivariate interpolation - eg see Abramowitz & Stegun 25.2.66
     for (size_t nbr=0; nbr<numNeighbours; ++nbr)
       {
