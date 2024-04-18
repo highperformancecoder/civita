@@ -421,7 +421,7 @@ namespace civita
     assert(i<size());
     if (index().empty())
       return arg->atHCIndex(pivotIndex(i));
-    return (*arg)[permutedIndex[i]];
+    return i<permutedIndex.size()? (*arg)[permutedIndex[i]]: nan("");
   }
 
   
