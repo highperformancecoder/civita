@@ -100,7 +100,8 @@ namespace civita
     if (x.type!=y.type) return false;
     switch (x.type)   {
     case Dimension::string: return x.string==y.string;
-    case Dimension::time: return x.time==y.time;
+      // peculiar syntax to work around compiler bug in implementing C++20 ambiguity rules
+    case Dimension::time: return x.time.operator==(y.time); 
     case Dimension::value: return x.value==y.value;
     }
     assert(false);
