@@ -147,7 +147,8 @@ namespace civita
     // note this agorithm is limited in rank (typically 32 dims on 32bit machine, or 64 dims on 64bit)
     if (rank()>sizeof(size_t)*8)
       throw runtime_error("Ranks > "+to_string(sizeof(size_t)*8)+" not supported");
-    size_t numNeighbours=size_t(1)<<rank();
+    auto dimsToInterpolate=min(maxInterpolateDimension,rank());
+    size_t numNeighbours=size_t(1)<<dimsToInterpolate;
     vector<size_t> iIdx=splitAndRotate(destIdx);
     const auto& argHC=arg->hypercube();
     // loop over the nearest neighbours in argument hypercube space of
@@ -159,7 +160,7 @@ namespace civita
       {
         double weight=1;
         size_t idx=0;
-        for (size_t dim=0, stride=1; dim<min(maxInterpolateDimension,rank()); stride*=argHC.xvectors[dim].size(), ++dim)
+        for (size_t dim=0, stride=1; dim<dimsToInterpolate; stride*=argHC.xvectors[dim].size(), ++dim)
           {
             const auto& x=sortedArgHC[dim].first;
             assert(!x.empty());

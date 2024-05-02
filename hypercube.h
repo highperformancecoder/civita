@@ -72,8 +72,13 @@ namespace civita
       auto ii=splitIndex.begin();
       for (std::size_t i=0; i<xvectors.size(); ++i, ++ii)
         {
-          index+=*ii * stride;
-          stride*=xvectors[i].size();
+          if (*ii<xvectors[i].size())
+            {
+              index+=*ii * stride;
+              stride*=xvectors[i].size();
+            }
+          else
+            return std::numeric_limits<size_t>::max(); // invalid linealIndex
         }
       return index;
     }
