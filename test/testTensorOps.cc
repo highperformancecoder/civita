@@ -18,7 +18,7 @@
 */
 
 #include "xvector.h"
-#include "tensorOp.h"
+#include "interpolateHypercube.h"
 #include "tensorVal.h"
 using namespace civita;
 
@@ -464,6 +464,27 @@ SUITE(TensorOps)
        CHECK_ARRAY_EQUAL(expected, op, op.size());
      }
 
-
-
+    // TODO - adapt binInterpolation* tests from Minsky to tests here
+    
+    // tests that InterpolatHC trims correctly - for Ravel #545.
+    TEST(InterpolateHC2DTrimming1DSparse)
+     {
+       InterpolateHC op(1);
+       auto arg=make_shared<TensorVal>(vector<unsigned>{5,3});
+       (*arg)=map<size_t,double>{{0,0},{3,3},{4,4},{7,7},{9,9},{10,10},{13,13}};
+       auto hc=arg->hypercube();
+       hc.xvectors[0].erase(hc.xvectors[0].begin()); // remove first element of first dimension (trimmed)
+       op.hypercube(hc);
+       op.setArgument(arg,{});
+       CHECK_EQUAL(0, op.index().size());
+       double nan=std::nan("");
+       vector<double> expected{nan,nan,3,4,nan,7,nan,9,nan,nan,13,nan};
+       CHECK_EQUAL(expected.size(), op.size());
+       // nan cannot be compared with nan :)
+       for (size_t i=0; i<expected.size(); ++i)
+         if (isfinite(expected[i]))
+           CHECK_EQUAL(expected[i], op[i]);
+         else
+           CHECK(isnan(op[i]));
+     }
 }

@@ -105,9 +105,13 @@ namespace civita
     else
       for (auto i: index())
         checkCancel(), weightedIndices.push_back(bodyCentredNeighbourhood(i));
-    interpolateHCSize=1;
+    argInterpolatedHCsize=interpolateHCSize=1;
+    auto argDims=arg->hypercube().dims();
     for (size_t dim=0; dim<min(maxInterpolateDimension, rank()); ++dim)
-      interpolateHCSize*=targetHC[dim].size();
+      {
+        interpolateHCSize*=targetHC[dim].size();
+        argInterpolatedHCsize*=argDims[dim];
+      }
   }
 
   void InterpolateHC::sortAndAdd(const XVector& xv)
@@ -135,7 +139,7 @@ namespace civita
         for (const auto& i: weightedIndices[div.rem])
           {
             assert(i.index<arg->hypercube().numElements());
-            r+=i.weight * arg->atHCIndex(i.index+interpolateHCSize*div.quot);
+            r+=i.weight * arg->atHCIndex(i.index+argInterpolatedHCsize*div.quot);
           }
         return r;
       }
