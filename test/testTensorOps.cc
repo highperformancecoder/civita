@@ -415,14 +415,14 @@ SUITE(TensorOps)
        op.setArgument(arg,{});
        Hypercube hc;
        hc.xvectors.emplace_back("back",Dimension(Dimension::value,""),vector<any>{1,2,3});
-       Index idx(set<size_t>{2});
-       op.setSpreadDimensions(hc,idx);
+       op.setSpreadDimensions(hc);
+       op.setIndex();
        CHECK_EQUAL(arg->rank()+hc.rank(),op.rank());
-       CHECK_EQUAL(arg->index().size()*idx.size(),op.index().size());
-       vector<size_t> expectedIndex{2,11,14};
+       CHECK_EQUAL(arg->index().size()*hc.xvectors.back().size(),op.index().size());
+       vector<size_t> expectedIndex{0,1,2,9,10,11,12,13,14};
        CHECK_EQUAL(expectedIndex.size(), op.index().size());
        CHECK_ARRAY_EQUAL(expectedIndex, op.index(), op.size());
-       vector<double> expected{0,3,4};
+       vector<double> expected{0,0,0,3,3,3,4,4,4};
        CHECK_EQUAL(expected.size(), op.size());
        CHECK_ARRAY_EQUAL(expected, op, op.size());
      }
@@ -452,14 +452,14 @@ SUITE(TensorOps)
        op.setArgument(arg,{});
        Hypercube hc;
        hc.xvectors.emplace_back("back",Dimension(Dimension::value,""),vector<any>{1,2,3});
-       Index idx(set<size_t>{2});
-       op.setSpreadDimensions(hc,idx);
+       op.setSpreadDimensions(hc);
+       op.setIndex();
        CHECK_EQUAL(arg->rank()+hc.rank(),op.rank());
-       CHECK_EQUAL(arg->index().size()*idx.size(),op.index().size());
-       vector<size_t> expectedIndex{12,15,16};
+       CHECK_EQUAL(arg->index().size()*hc.xvectors.back().size(),op.index().size());
+       vector<size_t> expectedIndex{0,3,4,6,9,10,12,15,16};
        CHECK_EQUAL(expectedIndex.size(), op.index().size());
        CHECK_ARRAY_EQUAL(expectedIndex, op.index(), op.size());
-       vector<double> expected{0,3,4};
+       vector<double> expected{0,3,4,0,3,4,0,3,4};
        CHECK_EQUAL(expected.size(), op.size());
        CHECK_ARRAY_EQUAL(expected, op, op.size());
      }
