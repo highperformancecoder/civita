@@ -37,14 +37,18 @@ namespace civita
     void extract(const string& fmt, const string& data, int pos1, const char* re1, int& var1,
                  int pos2, const char* re2, int& var2)
     {
-      string rePat=fmt.substr(0,pos1)+re1+
+      string rePat="\\s*"+fmt.substr(0,pos1)+re1+
         fmt.substr(pos1+2,pos2-pos1-2)+re2+
-        fmt.substr(pos2+2);
+        fmt.substr(pos2+2)+"\\s*";
       regex pattern(rePat);
       smatch match;
-      regex_match(data,match,pattern);
-      var1=stoi(match[1]);
-      var2=stoi(match[2]);
+      if (regex_match(data,match,pattern))
+        {
+          var1=stoi(match[1]);
+          var2=stoi(match[2]);
+        }
+      else
+        throw runtime_error("data "+data+" fails to match pattern "+rePat);
     }
 
     struct InvalidDate: public std::runtime_error
