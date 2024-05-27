@@ -508,7 +508,7 @@ namespace civita
     if (numSpreadElements==1) {m_index=aIdx; return;}
     set<size_t> idx;
     for (auto i: aIdx)
-      for (auto j=0; j<numSpreadElements; checkCancel(), ++j)
+      for (size_t j=0; j<numSpreadElements; checkCancel(), ++j)
         idx.insert(j+i*numSpreadElements);
     m_index=idx;
   }
@@ -522,7 +522,7 @@ namespace civita
     set<size_t> idx;
     for (auto i=arg->rank(); i<rank(); ++i) numToSpread*=m_hypercube.xvectors[i].size();
     if (numToSpread==1) {m_index=aIdx; return;}
-    for (auto i=0; i<numToSpread; ++i)
+    for (size_t i=0; i<numToSpread; ++i)
       for (auto j: aIdx)
         checkCancel(), idx.insert(j+i*numSpreadElements);
     m_index=idx;
