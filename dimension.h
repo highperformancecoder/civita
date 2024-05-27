@@ -50,6 +50,7 @@ namespace civita
     std::string string;
     size_t hash() const;
     any()=default;
+    any(Dimension::Type type): type(type) {}
     any(const boost::posix_time::ptime& x): type(Dimension::time), time(x) {}
     any(const std::string& x): type(Dimension::string), string(x) {}
     any(const char* x): type(Dimension::string), string(x) {}
@@ -110,6 +111,19 @@ namespace civita
 
   inline bool operator!=(const any& x, const any& y) {
     return !(x==y);
+  }
+
+  /// interpolate betwwen x and y with fraction a (between 0 & 1)
+  /// if x&y are different types or are strings, return x
+  inline any interpolate(const any& x, const any& y, double a)
+  {
+    if (x.type!=y.type) return x;
+    switch (x.type)
+      {
+      case Dimension::string: return a<=0.5? x: y;
+      case Dimension::value: return y.value*a+x.value*(1-a);
+      case Dimension::time: return x.time + (y.time-x.time)*a;
+      }
   }
   
 #ifdef STRINGKEYMAP_H
