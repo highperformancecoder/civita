@@ -132,7 +132,7 @@ namespace civita
   double InterpolateHC::operator[](size_t idx) const
   {
     auto div=lldiv(idx,interpolateHCSize);
-    if (div.rem<weightedIndices.size())
+    if (size_t(div.rem)<weightedIndices.size())
       {
         if (weightedIndices[div.rem].empty()) return nan("");
         double r=0;
