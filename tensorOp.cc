@@ -447,7 +447,8 @@ namespace civita
     xv.clear();
     auto& axv=arg->hypercube().xvectors[m_axis];
     for (auto i: m_permutation)
-      checkCancel(), xv.push_back(axv[i]);
+      if (i<axv.size())
+        checkCancel(), xv.push_back(axv[i]);
     map<unsigned,unsigned> reverseIndex;
     for (size_t i=0; i<m_permutation.size(); checkCancel(), ++i)
       reverseIndex[m_permutation[i]]=i;
