@@ -26,6 +26,7 @@ namespace civita
 {
   namespace
   {
+    // used in an assertion.
     bool sorted(civita::XVector::const_iterator begin, civita::XVector::const_iterator end)
     {
       civita::AnyLess less;
@@ -259,7 +260,6 @@ namespace civita
     size_t interpolateSize=initPivotOrder.size();
     
     initPivotOrder.insert(initPivotOrder.end(),stringDims.begin(),stringDims.end());
-    //shared_ptr<Pivot> initPivot;
     if (initPivotOrder!=finalPivotOrder)
       {
         auto initPivot=make_shared<Pivot>();

@@ -124,6 +124,8 @@ namespace civita
       case Dimension::value: return y.value*a+x.value*(1-a);
       case Dimension::time: return x.time + (y.time-x.time)*a;
       }
+    assert(false);
+    return {}; // unreachable code to satisfy CodeQL
   }
   
 #ifdef STRINGKEYMAP_H
