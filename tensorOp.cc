@@ -471,6 +471,7 @@ namespace civita
     if (index().empty())
       {
         auto splitted=hypercube().splitIndex(i);
+        if (m_axis>=splitted.size()) return nan("");
         splitted[m_axis]=m_permutation[splitted[m_axis]];
         return arg->atHCIndex(arg->hypercube().linealIndex(splitted));
       }
