@@ -18,7 +18,6 @@
 */
 
 #include "hypercube.h"
-#include <error.h>
 #include <set>
 
 #ifdef CLASSDESC
