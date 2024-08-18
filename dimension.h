@@ -128,7 +128,7 @@ namespace civita
     return {}; // unreachable code to satisfy CodeQL
   }
   
-#ifdef STRINGKEYMAP_H
+#ifdef CLASSDESC_STRINGKEYMAP_H
   using classdesc::StringKeyMap;
 #else
   template <class T> using StringKeyMap=std::map<std::string, T>;
@@ -174,7 +174,7 @@ namespace civita
 #include <RESTProcess_base.h>
 namespace classdesc_access
 {
-#ifdef JSON_PACK_BASE_H
+#ifdef CLASSDESC_JSON_PACK_BASE_H
   template <>
   struct access_json_pack<civita::any>
   {
@@ -185,7 +185,7 @@ namespace classdesc_access
   struct access_json_unpack<civita::any>: public classdesc::NullDescriptor<classdesc::json_pack_t> {};
 #endif
   
-#ifdef RESTPROCESS_H
+#ifdef CLASSDESC_RESTPROCESS_BASE_H
   template <>
   struct access_RESTProcess<civita::any>: public classdesc::NullDescriptor<classdesc::RESTProcess_t> {};
 #endif
