@@ -23,7 +23,6 @@
 using namespace std;
 
 #include <boost/date_time.hpp>
-using namespace boost;
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 

@@ -61,6 +61,7 @@ endif
 ifdef CLASSDESC
 FLAGS+=-DCLASSDESC  -I$(dir $(CLASSDESC))/../include -I$(dir $(CLASSDESC)) -I$(dir $(CLASSDESC))/json5_parser/json5_parser
 $(warning $(FLAGS))
+VPATH+=$(dir $(CLASSDESC))/../include $(dir $(CLASSDESC))
 endif
 
 ifdef AEGIS
