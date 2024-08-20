@@ -45,7 +45,7 @@ namespace civita
     return l;
   }      
 
-  const std::vector<unsigned>& Hypercube::dims(const std::vector<unsigned>& d) {
+  std::vector<unsigned> const& Hypercube::dims(const std::vector<unsigned>& d) {
     xvectors.clear();
     for (size_t i=0; i<d.size(); ++i)
       {

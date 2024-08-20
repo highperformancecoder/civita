@@ -55,9 +55,9 @@ namespace civita
     bool dimsAreDistinct() const;
 
     /// set the dimensions. 
-    const std::vector<unsigned>& dims(const std::vector<unsigned>& d);
+    std::vector<unsigned> const& dims(const std::vector<unsigned>& d);
     template <class T>
-    const std::vector<unsigned>& dims(const std::initializer_list<T>& d)
+    std::vector<unsigned> const& dims(const std::initializer_list<T>& d)
     {return dims(std::vector<unsigned>(d.begin(),d.end()));}
    
     std::vector<std::string> dimLabels() const;
