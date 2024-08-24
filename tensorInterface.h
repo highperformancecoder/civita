@@ -74,6 +74,8 @@ namespace civita
     virtual const Index& index() const {return m_index;}
     /// return or compute data at a location
     virtual double operator[](std::size_t) const=0;
+    /// word version to allow access from scripts
+    double at(std::size_t i) const {return (*this)[i];}
     /// return number of elements in tensor - maybe less than hypercube.numElements if sparse
     virtual std::size_t size() const {
       std::size_t s=index().size();
