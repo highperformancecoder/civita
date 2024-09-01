@@ -130,7 +130,7 @@ namespace civita
     struct Cancelled: public std::exception {
       const char* what() const noexcept override {return "civita cancelled";}
     };
-   
+  
     /// Can be used to terminate long running computations from another thread.
     /// @param v true to cancel the computation, false to reset the cancel condition
     /// @throw Cancelled will be thrown from the cancelled thread
@@ -146,6 +146,21 @@ namespace civita
     void checkCancel() const {if (s_cancel.load()) throw Cancelled();}
   };
 
+  /// wraps an ITensor referance - useful for creating a TensorPtr referring to a reference
+  class ITensorRef: public ITensor
+  {
+    ITensor& ref;
+  public:
+    ITensorRef(ITensor& ref): ref(ref) {}
+    const Hypercube& hypercube() const override {return ref.hypercube();}
+    const Hypercube& hypercube(const Hypercube& hc) override {return ref.hypercube(hc);}
+    const Hypercube& hypercube(Hypercube&& hc) override {return ref.hypercube(std::move(hc));}
+    const Index& index() const override {return ref.index();}
+    double operator[](std::size_t i) const override {return ref[i];}
+    std::size_t size() const override {return ref.size();}
+    civita::ITensor::Timestamp timestamp() const override {return ref.timestamp();}
+  };
+     
   inline std::ostream& operator<<(std::ostream& o, const ITensor::Timestamp& t)
   {
      return o<<std::chrono::system_clock::to_time_t
