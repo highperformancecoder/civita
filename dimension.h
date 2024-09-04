@@ -128,7 +128,7 @@ namespace civita
     return {}; // unreachable code to satisfy CodeQL
   }
   
-#ifdef STRINGKEYMAP_H
+#ifdef CLASSDESC_STRINGKEYMAP_H
   using classdesc::StringKeyMap;
 #else
   template <class T> using StringKeyMap=std::map<std::string, T>;
@@ -171,8 +171,10 @@ namespace civita
 #include <json_pack_base.h>
 #include <pack_base.h>
 #include <random_init_base.h>
+#include <RESTProcess_base.h>
 namespace classdesc_access
 {
+#ifdef CLASSDESC_JSON_PACK_BASE_H
   template <>
   struct access_json_pack<civita::any>
   {
@@ -181,7 +183,13 @@ namespace classdesc_access
   };
   template <>
   struct access_json_unpack<civita::any>: public classdesc::NullDescriptor<classdesc::json_pack_t> {};
-
+#endif
+  
+#ifdef CLASSDESC_RESTPROCESS_BASE_H
+  template <>
+  struct access_RESTProcess<civita::any>: public classdesc::NullDescriptor<classdesc::RESTProcess_t> {};
+#endif
+  
   template <>
   struct access_pack<civita::any>
   {
@@ -248,7 +256,7 @@ namespace classdesc_access
   template <>
   struct access_random_init<boost::posix_time::ptime> {
     void operator()(classdesc::random_init_t& r, const std::string&, boost::posix_time::ptime& x)
-    {x=boost::posix_time::from_time_t(time_t(r.rand()*double(std::numeric_limits<time_t>::max())));}
+    {x=boost::posix_time::from_time_t(time_t(r.rand()*3600.0*24*365*8029));}
   };
 }
 #endif

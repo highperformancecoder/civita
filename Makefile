@@ -61,6 +61,7 @@ endif
 ifdef CLASSDESC
 FLAGS+=-DCLASSDESC  -I$(dir $(CLASSDESC))/../include -I$(dir $(CLASSDESC)) -I$(dir $(CLASSDESC))/json5_parser/json5_parser
 $(warning $(FLAGS))
+VPATH+=$(dir $(CLASSDESC))/../include $(dir $(CLASSDESC))
 endif
 
 ifdef AEGIS
@@ -105,7 +106,7 @@ lcov:
 	lcov -a lcovi.info -a lcovt.info -o lcov.info
 	genhtml -o coverage lcov.info
 
-BASIC_CLEAN=rm -rf *.o *~ "\#*\#" core *.d *.cd *.jcd *.gcda *.gcno
+BASIC_CLEAN=rm -rf *.o *~ "\#*\#" core *.d *.cd *.gcda *.gcno
 
 clean:
 	-$(BASIC_CLEAN) libcivita.a

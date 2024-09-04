@@ -104,19 +104,27 @@ namespace civita
     {m_hypercube=std::move(hc);allocVal();return m_hypercube;}
     using ITensor::hypercube;
 
+    // for javascript support
+    void setDimensions(const std::vector<unsigned>& dims) {
+      m_hypercube.dims(dims); allocVal();
+    }
+    void setHypercube(const Hypercube& hc) {hypercube(hc);}
+    
     void allocVal() {data.resize(size());}
 
     // assign a sparse data set
-    TensorVal& operator=(const std::map<std::size_t,double>& x) {
+    void assign(const std::map<std::size_t,double>& x) {
       m_index=x;
       data.clear(); data.reserve(x.size());
       for (auto& j: x) data.push_back(j.second);
       updateTimestamp();
-      return *this;
     }
 
-    // assign a dense data set. Note data is trimmed or padded to hypercube().numElements();
-    TensorVal& operator=(const std::vector<double>& x) {data=x; allocVal(); updateTimestamp(); return *this;}
+    TensorVal& operator=(const std::map<std::size_t,double>& x) {assign(x); return *this;}
+    
+      // assign a dense data set. Note data is trimmed or padded to hypercube().numElements();
+    void assign(const std::vector<double>& x) {data=x; allocVal(); updateTimestamp();}
+    TensorVal& operator=(const std::vector<double>& x) {assign(x); return *this;}
     
     double operator[](std::size_t i) const override {return data.empty()? 0: data[i];}
     double& operator[](std::size_t i) override {updateTimestamp(); return data[i];}
