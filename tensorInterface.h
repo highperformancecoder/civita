@@ -76,6 +76,13 @@ namespace civita
     virtual double operator[](std::size_t) const=0;
     /// word version to allow access from scripts
     double at(std::size_t i) const {return (*this)[i];}
+    /// return vector of data ([0]..[size()-1])
+    std::vector<double> data() const {
+      std::vector<double> r; r.reserve(size());
+      for (size_t i=0; i<size(); ++i)
+        r.push_back(at(i));
+      return r;
+    }
     /// return number of elements in tensor - maybe less than hypercube.numElements if sparse
     virtual std::size_t size() const {
       std::size_t s=index().size();
