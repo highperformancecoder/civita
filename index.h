@@ -58,7 +58,7 @@ namespace civita
         return *this;
       }
 
-#if defined(__cplusplus) && __cplusplus >= 202002L
+#if defined(__cplusplus) && __cplusplus >= 202002L && !defined(__APPLE__)
       bool operator<=>(const Index&) const=default;
 #endif
       
