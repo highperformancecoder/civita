@@ -46,7 +46,7 @@ FLAGS+=-isystem /usr/local/include -isystem /opt/local/include
 endif
 
 OBJS=hypercube.o index.o interpolateHypercube.o tensorOp.o xvector.o
-FLAGS+=-I. -I$(HOME)/usr/include -I/usr/local/include
+FLAGS+=-I. $(EXTRA_FLAGS) -I$(HOME)/usr/include -I/usr/local/include
 
 ifeq ($(OS),Darwin)
 FLAGS+=-std=c++17
