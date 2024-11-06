@@ -19,10 +19,26 @@
 
 
 #include "index.h"
+#include <algorithm>
+#include <atomic>
 #include <assert.h>
 using namespace std;
 
-using namespace std;
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#include <sys/wait.h>
+#endif
+
+#if defined(__linux__)
+#include <sys/sysinfo.h>
+#endif
+
+#ifdef __APPLE__
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#endif
 
 namespace civita
 {
@@ -32,5 +48,43 @@ namespace civita
     if (lb!=index.end() && *lb==h)
       return size_t(lb-index.begin());
     return index.size();
+  }
+  
+  size_t physicalMem() 
+  {
+#if defined(__linux__)
+    struct sysinfo s;
+    sysinfo(&s);
+    return s.totalram;
+#elif defined(WIN32)
+    MEMORYSTATUSEX s{sizeof(MEMORYSTATUSEX)};
+    GlobalMemoryStatusEx(&s);
+    return s.ullTotalPhys;
+#elif defined(__APPLE__)
+    int mib[]={CTL_HW,HW_MEMSIZE};
+    uint64_t physical_memory;
+    size_t length = sizeof(uint64_t);
+    if (sysctl(mib, sizeof(mib)/sizeof(int), &physical_memory, &length, NULL, 0))
+      perror("physicalMem:");
+    return physical_memory;
+#else
+    // all else fails, return max value
+    return ~0UL;
+#endif  
+  }
+  
+  void trackAllocation(ptrdiff_t n)
+  {
+    static atomic<size_t> allocated{0}, max_allocated{0};
+    // discount factor determined empirically to prevent application being pushed into swap
+    static size_t memAvailable=0.6*physicalMem();
+    allocated+=n;
+    // debug code left for posterity
+    // auto m=max_allocated.load();
+    // while (allocated>m)
+    //   if (max_allocated.compare_exchange_weak(m,allocated))
+    //     cout<<max_allocated<<endl;
+    if (n>0 && allocated>memAvailable) // limit allocations to physical memory
+      throw bad_alloc();
   }
 }

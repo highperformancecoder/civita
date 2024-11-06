@@ -22,20 +22,44 @@
 #include <vector>
 #include <set>
 #include <map>
-#include <cstddef>
+#include <cstdint>
+#include <cstdlib>
 
 #ifndef CLASSDESC_ACCESS
 #define CLASSDESC_ACCESS(x)
 #endif
 
+// This macro allows the allocator to be swapped for a custom
+// allocator, such as needed when running this under an electron
+// project. See https://sourceforge.net/p/minsky/ravel/564/
+#ifndef CIVITA_ALLOCATOR
+#define CIVITA_ALLOCATOR std::allocator
+#endif
+
 namespace civita
 {
+  void trackAllocation(std::ptrdiff_t n);
+    
+  template <class T>
+  struct LibCAllocator
+  {
+    using value_type=T;
+    T* allocate(size_t n) {
+      trackAllocation(sizeof(T)*n);
+      if (auto r=reinterpret_cast<T*>(std::malloc(sizeof(T)*n))) return r;
+      throw std::bad_alloc();
+    }
+    void deallocate(T* p, size_t n) {trackAllocation(-sizeof(T)*n); std::free(p);}
+    bool operator==(const LibCAllocator&) const {return true;} // no state!
+    bool operator!=(const LibCAllocator& x) const {return !operator==(x);}
+  };
+  
   /// represents index concept for sparse tensors
   class Index
     {
-      std::vector<std::size_t> index; // sorted index vector
-      CLASSDESC_ACCESS(Index);
     public:
+      CLASSDESC_ACCESS(Index);
+      using Impl=std::vector<std::size_t,CIVITA_ALLOCATOR<std::size_t>>;
       Index() {}
       template <class T> explicit
       Index(const T& indices) {*this=indices;}
@@ -65,15 +89,20 @@ namespace civita
       /// return hypercube index corresponding to lineal index i 
       std::size_t operator[](std::size_t i) const {return index.empty()? i: index[i];}
       // invariant, should always be true
-      bool sorted() const
-      {std::set<std::size_t> tmp(index.begin(), index.end()); return tmp.size()==index.size();}
+      bool sorted() const {
+        std::set<std::size_t,std::less<std::size_t>,CIVITA_ALLOCATOR<std::size_t>>
+          tmp(index.begin(), index.end());
+        return tmp.size()==index.size();
+      }
       bool empty() const {return index.empty();}
       std::size_t size() const {return index.size();}
       void clear() {index.clear();}
       /// return the lineal index of hypercube index h, or size if not present 
       std::size_t linealOffset(std::size_t h) const;
-      std::vector<std::size_t>::const_iterator begin() const {return index.begin();}
-      std::vector<std::size_t>::const_iterator end() const {return index.end();}
+      Index::Impl::const_iterator begin() const {return index.begin();}
+      Index::Impl::const_iterator end() const {return index.end();}
+    private:
+      Impl index; // sorted index vector
     };
     
 

@@ -24,6 +24,10 @@
 #include <vector>
 #include <chrono>
 
+#ifndef CIVITA_ALLOCATOR
+#define CIVITA_ALLOCATOR std::allocator
+#endif
+
 namespace civita
 {
   /// abstraction of a tensor variable, stored in contiguous memory
@@ -61,8 +65,11 @@ namespace civita
         }
     }
           
-    const Index& index(const std::initializer_list<std::size_t>& x)
-    {std::set<std::size_t> tmp(x); return index(Index(tmp));}
+    const Index& index(const std::initializer_list<std::size_t>& x) {
+      std::set<std::size_t,std::less<std::size_t>,CIVITA_ALLOCATOR<std::size_t>>
+        tmp(x.begin(), x.end());
+      return index(Index(tmp));
+    }
     const Index& index(const Index& x) {auto tmp=x; return index(std::move(tmp));}
     template <class T>
     const Index& index(const T& x) {return index(Index(x));}
@@ -81,7 +88,7 @@ namespace civita
   /// represent a tensor in initialisation expressions
   class TensorVal: public ITensorVal
   {
-    std::vector<double> data;
+    std::vector<double,CIVITA_ALLOCATOR<double>> data;
     Timestamp m_timestamp;
     CLASSDESC_ACCESS(TensorVal);
   public:
@@ -104,10 +111,13 @@ namespace civita
     {m_hypercube=std::move(hc);allocVal();return m_hypercube;}
     using ITensor::hypercube;
 
-    void allocVal() {data.resize(size());}
+    void allocVal() {
+      std::cout<<"TensorVal::allocVal: size()="<<size()<<" index.size()="<<m_index.size()<<std::endl;
+      data.resize(size());}
 
     // assign a sparse data set
-    TensorVal& operator=(const std::map<std::size_t,double>& x) {
+    template <class C, class A>
+    TensorVal& operator=(const std::map<std::size_t,double,C,A>& x) {
       m_index=x;
       data.clear(); data.reserve(x.size());
       for (auto& j: x) data.push_back(j.second);
@@ -116,7 +126,9 @@ namespace civita
     }
 
     // assign a dense data set. Note data is trimmed or padded to hypercube().numElements();
-    TensorVal& operator=(const std::vector<double>& x) {data=x; allocVal(); updateTimestamp(); return *this;}
+    template <class A>
+    TensorVal& operator=(const std::vector<double,A>& x)
+    {data.assign(x.begin(),x.end()); allocVal(); updateTimestamp(); return *this;}
     
     double operator[](std::size_t i) const override {return data.empty()? 0: data[i];}
     double& operator[](std::size_t i) override {updateTimestamp(); return data[i];}
