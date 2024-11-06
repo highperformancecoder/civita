@@ -22,7 +22,10 @@
 #include <algorithm>
 #include <atomic>
 #include <assert.h>
-using namespace std;
+// Windows byte definition clashes with std::byte, even though we don't use it.
+using std::atomic;
+using std::bad_alloc;
+using std::size_t;
 
 #ifdef _WIN32
 #include <windows.h>
