@@ -171,7 +171,6 @@ namespace civita
 #include <json_pack_base.h>
 #include <pack_base.h>
 #include <random_init_base.h>
-#include <RESTProcess_base.h>
 namespace classdesc_access
 {
 #if defined(CLASSDESC_JSON_PACK_BASE_H) || defined(JSON_PACK_BASE_H)
@@ -183,11 +182,6 @@ namespace classdesc_access
   };
   template <>
   struct access_json_unpack<civita::any>: public classdesc::NullDescriptor<classdesc::json_pack_t> {};
-#endif
-  
-#if defined(CLASSDESC_RESTPROCESS_BASE_H) || defined(RESTPROCESS_H)
-  template <>
-  struct access_RESTProcess<civita::any>: public classdesc::NullDescriptor<classdesc::RESTProcess_t> {};
 #endif
   
   template <>
