@@ -76,7 +76,7 @@ namespace civita
 #endif  
   }
   
-  void trackAllocation(ptrdiff_t n)
+  void trackAllocation(std::ptrdiff_t n)
   {
     static atomic<size_t> allocated{0}, max_allocated{0};
     // discount factor determined empirically to prevent application being pushed into swap
