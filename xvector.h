@@ -63,13 +63,6 @@ namespace civita
     {return std::lexicographical_compare(x.begin(),x.end(),y.begin(),y.end(),AnyLess());}
   };
     
-  struct NamedDimension
-  {
-    std::string name;
-    Dimension dimension;
-    NamedDimension(const std::string& name={}, const Dimension& dimension={}): name(name), dimension(dimension) {}
-  };
-  
   /// labels describing the points along dimensions. These can be strings (text type), time values (boost::posix_time type) or numerical values (double)
   struct XVector: public NamedDimension, public std::vector<any>
   {

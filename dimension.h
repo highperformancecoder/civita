@@ -35,6 +35,13 @@ namespace civita
     Dimension(Type t,const std::string& s): type(t), units(s) {}
   };
 
+  struct NamedDimension
+  {
+    std::string name;
+    Dimension dimension;
+    NamedDimension(const std::string& name={}, const Dimension& dimension={}): name(name), dimension(dimension) {}
+  };
+  
   template <class T> Dimension::Type dimensionTypeOf();
   template <> inline Dimension::Type dimensionTypeOf<std::string>() {return Dimension::string;}
   template <> inline Dimension::Type dimensionTypeOf<boost::posix_time::ptime>() {return Dimension::time;} 
