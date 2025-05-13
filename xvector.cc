@@ -151,16 +151,16 @@ namespace civita
   
   any AnyVal::operator()(const std::string& s) const
   {
-    // empty string can be used to represent a nothing value, eg in setCalipers, not an error
-    if (s.empty()) return any();
-    
     switch (dim.type)
       {
       case Dimension::string:
+        if (s.empty()) return " "; // empty strings have a special meaning, so on construction, replace with a blank string
         return s;
       case Dimension::value:
+        if (s.empty()) return nan("");
         return stod(s);
       case Dimension::time:
+        if (s.empty()) return not_a_date_time;
         switch (timeType)
           {
           case quarter: return constructAnyFromQuarter(s);
