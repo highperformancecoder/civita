@@ -157,10 +157,13 @@ namespace civita
     switch (dim.type)
       {
       case Dimension::string:
+        if (s.empty()) return " "; // empty strings have a special meaning, so on construction, replace with a blank string
         return s;
       case Dimension::value:
+        if (s.empty()) return nan("");
         return stod(s);
       case Dimension::time:
+        if (s.empty()) return not_a_date_time;
         switch (timeType)
           {
           case quarter: return constructAnyFromQuarter(s);
