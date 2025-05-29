@@ -93,10 +93,10 @@ namespace civita
     CLASSDESC_ACCESS(TensorVal);
     void assignDenseOrSparse(const std::map<std::size_t,double>& x) {
       size_t ne=m_hypercube.numElements();
-      if (x.size()<ne)
+      if (2*x.size()<ne)
         *this=x;
       else {
-        data.clear(); data.resize(ne,std::nan(""));
+        m_index.clear(); data.clear(); data.resize(ne,std::nan(""));
         for (auto& i: x) (*this)[i.first]=i.second;
       }
     }
