@@ -91,6 +91,15 @@ namespace civita
     std::vector<double,CIVITA_ALLOCATOR<double>> data;
     Timestamp m_timestamp;
     CLASSDESC_ACCESS(TensorVal);
+    void assignDenseOrSparse(const std::map<std::size_t,double>& x) {
+      size_t ne=m_hypercube.numElements();
+      if (x.size()<ne)
+        *this=x;
+      else {
+        data.clear(); data.resize(ne,std::nan(""));
+        for (auto& i: x) (*this)[i.first]=i.second;
+      }
+    }
   public:
     TensorVal(): data(1) {}
     TensorVal(double x): data(1,x) {}
@@ -121,6 +130,10 @@ namespace civita
 
     // assign a sparse data set
     void assign(const std::map<std::size_t,double>& x) {*this=x;}
+    void assign(const Hypercube& hc, const std::map<std::size_t,double>& x)
+    {m_hypercube=hc; assignDenseOrSparse(x);}
+    void assign(Hypercube&& hc, const std::map<std::size_t,double>& x)
+    {m_hypercube=std::move(hc); assignDenseOrSparse(x);}
 
     template <class A>
     TensorVal& operator=(const std::map<std::size_t,double,std::less<std::size_t>,A>& x) {
