@@ -81,13 +81,13 @@ namespace civita
     static atomic<size_t> allocated{0}, max_allocated{0};
     // discount factor determined empirically to prevent application being pushed into swap
     static size_t memAvailable=0.6*physicalMem();
-    allocated+=n;
     // debug code left for posterity
     // auto m=max_allocated.load();
     // while (allocated>m)
     //   if (max_allocated.compare_exchange_weak(m,allocated))
     //     cout<<max_allocated<<endl;
-    if (n>0 && allocated>memAvailable) // limit allocations to physical memory
+    if (n>0 && allocated+n>memAvailable) // limit allocations to physical memory
       throw bad_alloc();
+    allocated+=n;
   }
 }
