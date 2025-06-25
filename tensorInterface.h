@@ -143,6 +143,9 @@ namespace civita
     /// @throw Cancelled will be thrown from the cancelled thread
     /// Note - setting this to true will cancel all civita computations in all threads
     static void cancel(bool v) {s_cancel=v;}
+
+    /// checks if operation has been cancelled, and throws and exception if so
+    void checkCancel() const {if (s_cancel.load()) throw Cancelled();}
     
   protected:
     Hypercube m_hypercube;
@@ -150,7 +153,6 @@ namespace civita
     static std::atomic<bool> s_cancel;
     void notImpl() const
     {throw std::runtime_error("setArgument(s) variant not implemented");}
-    void checkCancel() const {if (s_cancel.load()) throw Cancelled();}
   };
 
   /// wraps an ITensor referance - useful for creating a TensorPtr referring to a reference
