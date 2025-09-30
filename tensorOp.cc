@@ -203,9 +203,12 @@ namespace civita
   double CachedTensorOp::operator[](size_t i) const
   {
     assert(i<size());
-    if (m_timestamp<timestamp()) {
-      computeTensor();
-      m_timestamp=Timestamp::clock::now();
+    {
+      lock_guard<decltype(computeTensorMutex)> lock(computeTensorMutex);
+      if (m_timestamp<timestamp()) {
+        computeTensor();
+        m_timestamp=Timestamp::clock::now();
+      }
     }
     return cachedResult[i];
   }

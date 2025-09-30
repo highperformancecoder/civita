@@ -24,6 +24,7 @@
 #include <functional>
 #include <memory>
 #include <vector>
+#include <mutex>
 
 namespace civita
 {
@@ -134,6 +135,8 @@ namespace civita
     /// computeTensor updates the above two mutable fields, but is
     /// logically const
     virtual void computeTensor() const=0;
+    /// prevents recursively calling computeTensor from deadlocking
+    mutable std::recursive_mutex computeTensorMutex;
   public:
     const Index& index() const override {return cachedResult.index();}
     std::size_t size() const override {return cachedResult.size();}
