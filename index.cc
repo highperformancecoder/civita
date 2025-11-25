@@ -88,6 +88,9 @@ namespace civita
     //     cout<<max_allocated<<endl;
     if (n>0 && allocated+n>memAvailable) // limit allocations to physical memory
       throw bad_alloc();
-    allocated+=n;
+    if (-n<allocated) // reset allocated to 0 if n would reduce it to a -ve number
+      allocated+=n;
+    else
+      allocated=0;
   }
 }

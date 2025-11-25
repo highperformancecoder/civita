@@ -6,7 +6,7 @@ OS=$(shell uname)
 ifdef DEBUG
 OPT=-g
 else
-OPT=-O3 -DNDEBUG
+OPT=-O3 -DNDEBUG -g
 endif
 
 ifdef FPIC
