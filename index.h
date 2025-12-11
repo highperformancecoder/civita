@@ -103,6 +103,23 @@ namespace civita
       Index::Impl::const_iterator end() const {return index.end();}
     private:
       Impl index; // sorted index vector
+      // For optimisation to avoid map<=>vector transformation
+      friend class PermuteAxis;
+      friend class Pivot;
+      friend class ReductionOp;
+      friend class Slice;
+      // optimised transfer routines - private because can't guarantee index uniqueness
+      void assignVector(Impl&& indices) {index=std::move(indices);}
+      template <class T, class A>
+      void assignVector(const std::vector<T,A>& indices) {
+        index.clear(); index.reserve(indices.size());
+        for (auto& i: indices) index.push_back(i);
+      }
+      template <class F, class S, class A>
+      void assignVector(const std::vector<std::pair<F,S>,A>& indices) {
+        index.clear(); index.reserve(indices.size());
+        for (auto& i: indices) index.push_back(i.first);
+      }
     };
     
 

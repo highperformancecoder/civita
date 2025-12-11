@@ -133,7 +133,7 @@ namespace civita
           {
             xv.erase(xv.begin()+dimension);
             // compute index - enter index elements that have any in the argument
-            set<size_t> indices;
+            vector<size_t> indices;
             for (size_t i=0; i<arg->size(); checkCancel(), ++i)
               {
                 auto splitIdx=ahc.splitIndex(arg->index()[i]);
@@ -141,9 +141,9 @@ namespace civita
                 splitIdx.erase(splitIdx.begin()+dimension);
                 auto idx=m_hypercube.linealIndex(splitIdx);
                 sumOverIndices[idx].emplace_back(soi);
-                indices.insert(idx);
+                indices.emplace_back(idx);
               }
-            m_index=indices;
+            m_index.assignVector(std::move(indices));
           }
         else
           m_hypercube.xvectors.clear(); //reduce all, return scalar
@@ -306,7 +306,7 @@ namespace civita
 
         // set up index vector
         auto& ahc=arg->hypercube();
-        map<size_t, size_t> ai;
+        vector<pair<size_t, size_t>> ai;
         for (size_t k=0; k<arg->index().size(); checkCancel(), ++k)
           {
             auto splitIdx=ahc.splitIndex(arg->index()[k]);
@@ -314,10 +314,10 @@ namespace civita
               {
                 splitIdx.erase(splitIdx.begin()+splitAxis);
                 auto l=hc.linealIndex(splitIdx);
-                ai[l]=k;
+                ai.emplace_back(l,k);
               }
           }
-        m_index=ai;
+        m_index.assignVector(ai);
         arg_index.resize(ai.size());
         // convert into lineal addressing
         size_t j=0;
@@ -388,7 +388,7 @@ namespace civita
     assert(hc.rank()==arg->rank());
     hypercube(std::move(hc));
     // permute the index vector
-    map<size_t, size_t> pi;
+    vector<pair<size_t, size_t>> pi;
     for (size_t i=0; i<arg->index().size(); ++i)
       {
         auto idx=arg->hypercube().splitIndex(arg->index()[i]);
@@ -401,9 +401,10 @@ namespace civita
           }
         auto l=hypercube().linealIndex(pidx);
         assert(pi.count(l)==0);
-        pi[l]=i;
+        pi.emplace_back(l,i);
       }
-    m_index=pi;
+    m_index.assignVector(pi);
+    assert(m_index.sorted());
     // convert to lineal indexing
     permutedIndex.clear();
     for (auto& i: pi) permutedIndex.push_back(i.second);
@@ -455,15 +456,15 @@ namespace civita
     map<unsigned,unsigned> reverseIndex;
     for (size_t i=0; i<m_permutation.size(); checkCancel(), ++i)
       reverseIndex[m_permutation[i]]=i;
-    map<size_t,size_t> indices;
+    vector<pair<size_t,size_t>> indices;
     for (size_t i=0; i<arg->index().size(); checkCancel(), ++i)
       {
         auto splitted=arg->hypercube().splitIndex(arg->index()[i]);
         auto ri=reverseIndex.find(splitted[m_axis]);
         if (ri!=reverseIndex.end() && (splitted[m_axis]=ri->second)<axv.size())
-          indices[hypercube().linealIndex(splitted)]=i;
+          indices.emplace_back(hypercube().linealIndex(splitted),i);
       }
-    m_index=indices;
+    m_index.assignVector(indices);
     permutedIndex.clear();
     for (auto& i: indices) checkCancel(), permutedIndex.push_back(i.second);
   }
