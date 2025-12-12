@@ -43,6 +43,8 @@ using std::size_t;
 #include <sys/sysctl.h>
 #endif
 
+using namespace std;
+
 namespace civita
 {
   size_t Index::linealOffset(size_t h) const
@@ -76,7 +78,7 @@ namespace civita
 #endif  
   }
   
-  void trackAllocation(std::ptrdiff_t n)
+  void trackAllocation(ptrdiff_t n)
   {
     static atomic<size_t> allocated{0}, max_allocated{0};
     // discount factor determined empirically to prevent application being pushed into swap
@@ -88,7 +90,7 @@ namespace civita
     //     cout<<max_allocated<<endl;
     if (n>0 && allocated+n>memAvailable) // limit allocations to physical memory
       throw bad_alloc();
-    if (-n<allocated) // reset allocated to 0 if n would reduce it to a -ve number
+    if (-n<ptrdiff_t(allocated)) // reset allocated to 0 if n would reduce it to a -ve number
       allocated+=n;
     else
       allocated=0;
