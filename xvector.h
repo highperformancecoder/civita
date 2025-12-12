@@ -22,21 +22,40 @@
 #include "dimension.h"
 #include <boost/date_time.hpp>
 #include <vector>
+#include <regex>
 #include <initializer_list>
 
 namespace civita
 {
+  // internal class for extracting quarter/year data
+  class Extractor
+  {
+    std::regex pattern;
+    bool swapVars=false;
+    std::string rePat;
+  public:
+    /// initialise regex pattern
+    /// @param fmt dimenion unit string describing this time type
+    /// @param pq location of %Q in fmt string
+    void setPattern(const std::string& fmt, size_t pq);
 
+    /// Extract year and date values from \a data
+    /// If swapVars is true, then var1 is quarter, var2 is year, otherwise vice-versa
+    void operator()(const std::string& data, int& var1, int& var2) const;
+  };
+  
+
+  
   /// convert string rep to an any rep
   ///two phase caching data independent computation for ptime conversion 
   class AnyVal
   {
     Dimension dim;
     std::string format;
-    std::string::size_type pq;
     enum TimeType {quarter, regular, time_input_facet} timeType=time_input_facet;
     any constructAnyFromQuarter(const std::string&) const;
     any constructAnyFromRegular(const std::string&) const;
+    Extractor extract;
   public:
     AnyVal()=default;
     AnyVal(const Dimension& dim) {setDimension(dim);}

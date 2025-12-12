@@ -33,28 +33,43 @@ namespace civita
 
   namespace
   {
-    void extract(const string& fmt, const string& data, int pos1, const char* re1, int& var1,
-                 int pos2, const char* re2, int& var2)
-    {
-      string rePat="\\s*"+fmt.substr(0,pos1)+re1+
-        fmt.substr(pos1+2,pos2-pos1-2)+re2+
-        fmt.substr(pos2+2)+"\\s*";
-      regex pattern(rePat);
-      smatch match;
-      if (regex_match(data,match,pattern))
-        {
-          var1=stoi(match[1]);
-          var2=stoi(match[2]);
-        }
-      else
-        throw runtime_error("data "+data+" fails to match pattern "+rePat);
-    }
-
     struct InvalidDate: public std::runtime_error
     {
       InvalidDate(const std::string& dateString, const std::string& format):
         runtime_error("invalid date/time: "+dateString+" for format "+format) {}
     };
+  }
+
+  void Extractor::setPattern(const string& fmt, size_t pq)
+  {
+    auto pos1=fmt.find("%Y");
+    if (pos1==string::npos)
+      throw runtime_error("year not specified in format string");
+    auto pos2=pq;
+    auto re1="(\\d{4})", re2="(\\d)";
+    if (pos2<pos1)
+      {
+        swap(pos2,pos1);
+        swap(re1,re2);
+        swapVars=true;
+      }
+    rePat="\\s*"+fmt.substr(0,pos1)+re1+
+      fmt.substr(pos1+2,pos2-pos1-2)+re2+
+      fmt.substr(pos2+2)+"\\s*";
+    pattern=std::move(regex(rePat));
+  }
+
+  void Extractor::operator()(const string& data, int& var1, int& var2) const
+  {
+    smatch match;
+    if (regex_match(data,match,pattern))
+      {
+        var1=stoi(match[1]);
+        var2=stoi(match[2]);
+        if (swapVars) swap(var1,var2);
+      }
+    else
+      throw runtime_error("data "+data+" fails to match pattern "+rePat);
   }
 
   
@@ -72,9 +87,10 @@ namespace civita
       case Dimension::value:
         return;
       case Dimension::time:
-        if ((pq=dim.units.find("%Q"))!=string::npos)
+        if (auto pq=dim.units.find("%Q"); pq!=string::npos)
           {
             timeType=quarter;
+            extract.setPattern(dim.units,pq);
             return;
           }
         // handle date formats with any combination of %Y, %m, %d, %H, %M, %S
@@ -106,14 +122,7 @@ namespace civita
     string pattern;
     static greg_month quarterMonth[]={Jan,Apr,Jul,Oct};
     int year, quarter;
-    auto pY=dim.units.find("%Y");
-    if (pY!=string::npos)
-      if (pq<pY)
-        extract(dim.units,s,pq,"(\\d)",quarter,pY,"(\\d{4})",year);
-      else
-        extract(dim.units,s,pY,"(\\d{4})",year,pq,"(\\d)",quarter);
-    else
-      throw runtime_error("year not specified in format string");
+    extract(s,year,quarter);
     if (quarter<1 || quarter>4)
       throw runtime_error("invalid quarter "+to_string(quarter));
     return ptime(date(year, quarterMonth[quarter-1], 1));
