@@ -75,7 +75,9 @@ namespace civita
   
   void XVector::push_back(const std::string& s)
   {
-    V::push_back(anyVal(dimension, s));
+    if (pushTemplate.dimension()!=dimension)
+      pushTemplate=std::move(AnyVal(dimension));
+    V::push_back(pushTemplate(s));
   }
 
   void AnyVal::setDimension(const Dimension& dim)

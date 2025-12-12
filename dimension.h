@@ -33,6 +33,7 @@ namespace civita
     std::string units; // for values, or parser string for time conversion
     Dimension() {}
     Dimension(Type t,const std::string& s): type(t), units(s) {}
+    bool operator!=(const Dimension& dim) const {return dim.type!=type || dim.units!=units;}
   };
 
   struct NamedDimension

@@ -60,6 +60,7 @@ namespace civita
     AnyVal()=default;
     AnyVal(const Dimension& dim) {setDimension(dim);}
     void setDimension(const Dimension&);
+    const Dimension& dimension() const {return dim;}
     any operator()(const std::string&) const;
   };
 
@@ -83,8 +84,9 @@ namespace civita
   };
     
   /// labels describing the points along dimensions. These can be strings (text type), time values (boost::posix_time type) or numerical values (double)
-  struct XVector: public NamedDimension, public std::vector<any>
+  class XVector: public NamedDimension, public std::vector<any>
   {
+  public:
     typedef std::vector<any> V;
     XVector() {}
     XVector(const std::string& name, const Dimension& dimension={}, const V& v={}): NamedDimension(name,dimension), V(v) {}
@@ -119,6 +121,9 @@ namespace civita
         }
       return false;
     }
+  private:
+    /// cached AnyVal template for push operations
+    AnyVal pushTemplate;
   };
 
 }
