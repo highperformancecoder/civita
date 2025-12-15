@@ -24,6 +24,7 @@
 #include <map>
 #include <cstdint>
 #include <cstdlib>
+#include <assert.h>
 
 #ifndef CLASSDESC_ACCESS
 #define CLASSDESC_ACCESS(x)
@@ -109,16 +110,18 @@ namespace civita
       friend class ReductionOp;
       friend class Slice;
       // optimised transfer routines - private because can't guarantee index uniqueness
-      void assignVector(Impl&& indices) {index=std::move(indices);}
+      void assignVector(Impl&& indices) {index=std::move(indices); assert(sorted());}
       template <class T, class A>
       void assignVector(const std::vector<T,A>& indices) {
         index.clear(); index.reserve(indices.size());
         for (auto& i: indices) index.push_back(i);
+         assert(sorted());
       }
       template <class F, class S, class A>
       void assignVector(const std::vector<std::pair<F,S>,A>& indices) {
         index.clear(); index.reserve(indices.size());
         for (auto& i: indices) index.push_back(i.first);
+         assert(sorted());
       }
     };
     

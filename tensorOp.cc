@@ -133,7 +133,7 @@ namespace civita
           {
             xv.erase(xv.begin()+dimension);
             // compute index - enter index elements that have any in the argument
-            vector<size_t> indices;
+            set<size_t> indices;
             for (size_t i=0; i<arg->size(); checkCancel(), ++i)
               {
                 auto splitIdx=ahc.splitIndex(arg->index()[i]);
@@ -141,15 +141,13 @@ namespace civita
                 splitIdx.erase(splitIdx.begin()+dimension);
                 auto idx=m_hypercube.linealIndex(splitIdx);
                 sumOverIndices[idx].emplace_back(soi);
-                indices.emplace_back(idx);
+                indices.emplace(idx);
               }
-            m_index.assignVector(std::move(indices));
+            m_index=std::move(indices);
+            return;
           }
-        else
-          m_hypercube.xvectors.clear(); //reduce all, return scalar
       }
-    else
-      m_hypercube.xvectors.clear();
+    m_hypercube.xvectors.clear(); //reduce all, return scalar
   }
 
   
@@ -400,7 +398,6 @@ namespace civita
             pidx[invPermutation[j]]=idx[j];
           }
         auto l=hypercube().linealIndex(pidx);
-        assert(pi.count(l)==0);
         pi.emplace_back(l,i);
       }
     m_index.assignVector(pi);

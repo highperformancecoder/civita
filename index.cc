@@ -49,9 +49,8 @@ namespace civita
 {
   size_t Index::linealOffset(size_t h) const
   {
-    auto lb=std::lower_bound(index.begin(), index.end(), h);
-    if (lb!=index.end() && *lb==h)
-      return size_t(lb-index.begin());
+    auto it=std::find(index.begin(), index.end(), h);
+    if (it!=index.end()) return size_t(it-index.begin());
     return index.size();
   }
   
