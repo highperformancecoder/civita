@@ -49,8 +49,12 @@ namespace civita
 {
   size_t Index::linealOffset(size_t h) const
   {
-    auto it=std::find(index.begin(), index.end(), h);
-    if (it!=index.end()) return size_t(it-index.begin());
+    if (linealOffsetLookup.empty())
+      for (auto i: index)
+        linealOffsetLookup.emplace(i,linealOffsetLookup.size());
+
+    auto it=linealOffsetLookup.find(h);
+    if (it!=linealOffsetLookup.end()) return it->second;
     return index.size();
   }
   

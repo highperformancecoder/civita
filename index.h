@@ -73,12 +73,14 @@ namespace civita
       template <class T, class C, class A>
       Index& operator=(const std::set<T,C,A>& indices) {
         index.clear(); index.reserve(indices.size());
+        linealOffsetLookup.clear();
         for (auto& i: indices) index.push_back(i);
         return *this;
       }
       template <class K, class V, class C, class A>
       Index& operator=(const std::map<K,V,C,A>& indices) {
         index.clear(); index.reserve(indices.size());
+        linealOffsetLookup.clear();
         for (auto& i: indices) index.push_back(i.first);
         return *this;
       }
@@ -104,22 +106,29 @@ namespace civita
       Index::Impl::const_iterator end() const {return index.end();}
     private:
       Impl index; // sorted index vector
+      mutable std::map<size_t,size_t> linealOffsetLookup; // cached map of index to linealOffset value
       // For optimisation to avoid map<=>vector transformation
       friend class PermuteAxis;
       friend class Pivot;
       friend class ReductionOp;
       friend class Slice;
       // optimised transfer routines - private because can't guarantee index uniqueness
-      void assignVector(Impl&& indices) {index=std::move(indices); assert(sorted());}
+      void assignVector(Impl&& indices) {
+        index=std::move(indices);
+        linealOffsetLookup.clear();
+        assert(sorted());
+      }
       template <class T, class A>
       void assignVector(const std::vector<T,A>& indices) {
         index.clear(); index.reserve(indices.size());
+        linealOffsetLookup.clear();
         for (auto& i: indices) index.push_back(i);
          assert(sorted());
       }
       template <class F, class S, class A>
       void assignVector(const std::vector<std::pair<F,S>,A>& indices) {
         index.clear(); index.reserve(indices.size());
+        linealOffsetLookup.clear();
         for (auto& i: indices) index.push_back(i.first);
          assert(sorted());
       }
