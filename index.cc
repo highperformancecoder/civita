@@ -50,8 +50,12 @@ namespace civita
   size_t Index::linealOffset(size_t h) const
   {
     if (linealOffsetLookup.empty())
-      for (auto i: index)
-        linealOffsetLookup.emplace(i,linealOffsetLookup.size());
+      {
+        lock_guard lock(linealOffsetMutex);
+        if (linealOffsetLookup.empty()) // in case another thread got here first
+          for (auto i: index)
+            linealOffsetLookup.emplace(i,linealOffsetLookup.size());
+      }
 
     auto it=linealOffsetLookup.find(h);
     if (it!=linealOffsetLookup.end()) return it->second;

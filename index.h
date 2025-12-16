@@ -22,6 +22,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <mutex>
 #include <cstdint>
 #include <cstdlib>
 #include <assert.h>
@@ -54,9 +55,18 @@ namespace civita
     bool operator==(const LibCAllocator&) const {return true;} // no state!
     bool operator!=(const LibCAllocator& x) const {return !operator==(x);}
   };
+
+  struct LinealOffsetMutex
+  {
+    mutable std::mutex linealOffsetMutex;
+    LinealOffsetMutex()=default;
+    // done this way to define null copy operations for the mutex
+    LinealOffsetMutex(const LinealOffsetMutex&) {}
+    LinealOffsetMutex& operator=(const LinealOffsetMutex&) {return *this;}
+  };
   
   /// represents index concept for sparse tensors
-  class Index
+  class Index: private LinealOffsetMutex
     {
     public:
       CLASSDESC_ACCESS(Index);
