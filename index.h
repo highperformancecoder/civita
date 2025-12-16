@@ -63,6 +63,10 @@ namespace civita
     // done this way to define null copy operations for the mutex
     LinealOffsetMutex(const LinealOffsetMutex&) {}
     LinealOffsetMutex& operator=(const LinealOffsetMutex&) {return *this;}
+#if defined(__cplusplus) && __cplusplus >= 202002L && !defined(__APPLE__)
+    std::strong_ordering operator<=>(const LinealOffsetMutex&) const {return std::strong_ordering::equal;}
+#endif
+    bool operator==(const LinealOffsetMutex&) const {return true;}
   };
   
   /// represents index concept for sparse tensors
@@ -96,7 +100,7 @@ namespace civita
       }
 
 #if defined(__cplusplus) && __cplusplus >= 202002L && !defined(__APPLE__)
-      bool operator<=>(const Index&) const=default;
+      std::strong_ordering operator<=>(const Index&) const=default;
 #endif
       
       /// return hypercube index corresponding to lineal index i 
@@ -109,7 +113,7 @@ namespace civita
       }
       bool empty() const {return index.empty();}
       std::size_t size() const {return index.size();}
-      void clear() {index.clear();}
+      void clear() {index.clear();linealOffsetLookup.clear();}
       /// return the lineal index of hypercube index h, or size if not present 
       std::size_t linealOffset(std::size_t h) const;
       Index::Impl::const_iterator begin() const {return index.begin();}
