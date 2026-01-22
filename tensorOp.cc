@@ -47,7 +47,7 @@ namespace civita
       hypercube(Hypercube());
     set<size_t> indices;
     if (arg1) indices.insert(arg1->index().begin(), arg1->index().end());
-    if (arg2 && !arg2->index().empty())
+    if (arg2 && arg2->rank()>0 && !arg2->index().empty())
       {
         set<size_t> indices2;
         indices2.insert(arg2->index().begin(), arg2->index().end());
