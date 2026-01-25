@@ -51,7 +51,7 @@ namespace civita
   {
     if (linealOffsetLookup.empty())
       {
-        lock_guard lock(linealOffsetMutex);
+        lock_guard<mutex> lock(linealOffsetMutex);
         if (linealOffsetLookup.empty()) // in case another thread got here first
           for (auto i: index)
             linealOffsetLookup.emplace(i,linealOffsetLookup.size());
