@@ -106,7 +106,7 @@ namespace civita
       /// return hypercube index corresponding to lineal index i 
       std::size_t operator[](std::size_t i) const {return index.empty()? i: index[i];}
       // invariant, should always be true
-      bool sorted() const {
+      bool noDuplicates() const {
         std::set<std::size_t,std::less<std::size_t>,CIVITA_ALLOCATOR<std::size_t>>
           tmp(index.begin(), index.end());
         return tmp.size()==index.size();
@@ -118,7 +118,7 @@ namespace civita
       std::size_t linealOffset(std::size_t h) const;
       Index::Impl::const_iterator begin() const {return index.begin();}
       Index::Impl::const_iterator end() const {return index.end();}
-    private:
+    protected:
       Impl index; // sorted index vector
       mutable std::map<size_t,size_t> linealOffsetLookup; // cached map of index to linealOffset value
       // For optimisation to avoid map<=>vector transformation
@@ -130,21 +130,21 @@ namespace civita
       void assignVector(Impl&& indices) {
         index=std::move(indices);
         linealOffsetLookup.clear();
-        assert(sorted());
+        assert(noDuplicates());
       }
       template <class T, class A>
       void assignVector(const std::vector<T,A>& indices) {
         index.clear(); index.reserve(indices.size());
         linealOffsetLookup.clear();
         for (auto& i: indices) index.push_back(i);
-         assert(sorted());
+         assert(noDuplicates());
       }
       template <class F, class S, class A>
       void assignVector(const std::vector<std::pair<F,S>,A>& indices) {
         index.clear(); index.reserve(indices.size());
         linealOffsetLookup.clear();
         for (auto& i: indices) index.push_back(i.first);
-         assert(sorted());
+         assert(noDuplicates());
       }
     };
     

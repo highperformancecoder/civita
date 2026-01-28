@@ -401,7 +401,7 @@ namespace civita
         pi.emplace_back(l,i);
       }
     m_index.assignVector(pi);
-    assert(m_index.sorted());
+    assert(m_index.noDuplicates());
     // convert to lineal indexing
     permutedIndex.clear();
     for (auto& i: pi) permutedIndex.push_back(i.second);
