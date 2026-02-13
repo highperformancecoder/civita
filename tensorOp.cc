@@ -301,29 +301,6 @@ namespace civita
             // finish building hypercube
             hc.xvectors.push_back(*i);
         hypercube(hc);
-
-        // set up index vector
-        auto& ahc=arg->hypercube();
-        vector<pair<size_t, size_t>> ai;
-        for (size_t k=0; k<arg->index().size(); checkCancel(), ++k)
-          {
-            auto splitIdx=ahc.splitIndex(arg->index()[k]);
-            if (splitIdx[splitAxis]==sliceIndex)
-              {
-                splitIdx.erase(splitIdx.begin()+splitAxis);
-                auto l=hc.linealIndex(splitIdx);
-                ai.emplace_back(l,k);
-              }
-          }
-        m_index.assignVector(ai);
-        arg_index.resize(ai.size());
-        // convert into lineal addressing
-        size_t j=0;
-        for (auto& k: ai)
-          {
-            checkCancel();
-            arg_index[j++]=k.second;
-          }
       }
   }
 
