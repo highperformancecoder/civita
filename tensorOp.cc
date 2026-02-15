@@ -191,10 +191,6 @@ namespace civita
 
   const Hypercube& CachedTensorOp::hypercube() const
   {
-    if (m_timestamp<timestamp()) {
-      computeTensor();
-      m_timestamp=Timestamp::clock::now();
-    }
     return cachedResult.hypercube();
   }
   
