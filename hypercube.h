@@ -72,7 +72,7 @@ namespace civita
       auto ii=splitIndex.begin();
       for (std::size_t i=0; i<xvectors.size(); ++i, ++ii)
         {
-          if (*ii<xvectors[i].size())
+          if (size_t(*ii)<xvectors[i].size())
             {
               index+=*ii * stride;
               stride*=xvectors[i].size();

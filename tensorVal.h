@@ -37,7 +37,8 @@ namespace civita
     ITensorVal(const Hypercube& hc): ITensor(hc) {}
     ITensorVal(Hypercube&& hc): ITensor(std::move(hc)) {}
     ITensorVal(const std::vector<unsigned>& dims): ITensor(dims) {}
-    virtual const ITensorVal& operator=(const ITensor&)=0;
+    virtual const ITensorVal& asg(const ITensor&)=0;
+    const ITensorVal& operator=(const ITensor& x) {return asg(x);}
     template <class T>
     ITensorVal& operator=(const std::initializer_list<T>& vals) {
       auto i=begin();
@@ -106,7 +107,7 @@ namespace civita
     TensorVal(const Hypercube& hc): ITensorVal(hc) {allocVal();}
     TensorVal(Hypercube&& hc): ITensorVal(std::move(hc)) {allocVal();}
     TensorVal(const std::vector<unsigned>& dims): ITensorVal(dims) {allocVal();}
-    TensorVal(const ITensor& t) {*this=t;}
+    TensorVal(const ITensor& t) {asg(t);}
     
     using ITensorVal::index;
     const Index& index(Index&& idx) override {
@@ -157,7 +158,7 @@ namespace civita
     
     double operator[](std::size_t i) const override {return data.empty()? 0: data[i];}
     double& operator[](std::size_t i) override {updateTimestamp(); return data[i];}
-    const TensorVal& operator=(const ITensor& x) override {
+    const TensorVal& asg(const ITensor& x) override {
       index(x.index());
       hypercube(x.hypercube());
       assert(data.size()==x.size());
@@ -165,7 +166,7 @@ namespace civita
       updateTimestamp();
       return *this;
     }
-
+    
     ITensor::Timestamp timestamp() const override {return m_timestamp;}
     // timestamp should be updated every time the data r index vectors
     // is updated, if using the CachedTensorOp functionality

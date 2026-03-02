@@ -54,7 +54,7 @@ namespace civita
   {
     Dimension::Type type=Dimension::string;
     boost::posix_time::ptime time;
-    double value;
+    double value=0;
     std::string string;
     size_t hash() const;
     any()=default;
