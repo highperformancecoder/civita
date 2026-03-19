@@ -56,7 +56,7 @@ namespace civita
     rePat="\\s*"+fmt.substr(0,pos1)+re1+
       fmt.substr(pos1+2,pos2-pos1-2)+re2+
       fmt.substr(pos2+2)+"\\s*";
-    pattern=std::move(regex(rePat));
+    pattern=regex(rePat);
   }
 
   void Extractor::operator()(const string& data, int& var1, int& var2) const
@@ -76,7 +76,7 @@ namespace civita
   void XVector::push_back(const std::string& s)
   {
     if (pushTemplate.dimension()!=dimension)
-      pushTemplate=std::move(AnyVal(dimension));
+      pushTemplate=AnyVal(dimension);
     V::push_back(pushTemplate(s));
   }
 

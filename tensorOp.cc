@@ -275,7 +275,6 @@ namespace civita
         Hypercube hc;
         // find axis where slicing along
         split=1;
-        size_t splitAxis=0;
         auto i=xv.begin();
         for (; i!=xv.end(); ++i)
           if (i->name==args.dimension)
@@ -287,7 +286,6 @@ namespace civita
             {
               hc.xvectors.push_back(*i);
               split*=i->size();
-              splitAxis++;
             }
 
         if (i==xv.end())
