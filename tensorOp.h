@@ -134,7 +134,8 @@ namespace civita
     mutable Timestamp m_timestamp;
     /// computeTensor updates the above two mutable fields, but is
     /// logically const
-    virtual void computeTensor() const=0;
+    /// @param index of i to update
+    virtual void computeTensor(std::size_t i) const=0;
     /// prevents recursively calling computeTensor from deadlocking
     mutable std::recursive_mutex computeTensorMutex;
   public:
@@ -223,7 +224,7 @@ namespace civita
         cachedResult.hypercube(arg->hypercube());
       // TODO - can we handle sparse data?
     }      
-    void computeTensor() const override;
+    void computeTensor(std::size_t) const override;
   };
 
   /// corresponds to OLAP slice operation
