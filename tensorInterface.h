@@ -26,7 +26,9 @@
 #define CLASSDESC_ACCESS(x)
 #endif
 #include <atomic>
+#include <bit>
 #include <chrono>
+#include <cstring>
 #include <iostream>
 #include <set>
 
@@ -35,6 +37,18 @@ namespace civita
   class ITensor;
   using TensorPtr=std::shared_ptr<ITensor>;
 
+  // special signalling value used for caching purposes
+  inline double uninitialised() {return std::nan("2");}
+  // special signalling value to indicate a missing value
+  inline double missing() {return std::nan("");}
+
+  inline bool isUninitialised(double x)
+  // use memcmp as nans cannot be compared
+  {
+    static const double uninit=uninitialised();
+    return std::memcmp(&x,&uninit,sizeof(x))==0;
+  }
+  
   class ITensor
   {
   public:
