@@ -200,12 +200,9 @@ namespace civita
     {
       lock_guard<decltype(computeTensorMutex)> lock(computeTensorMutex);
       if (m_timestamp<timestamp()) {
-        // invalidate the cache
-        cachedResult=vector<double>(size(),uninitialised());
+        computeTensor();
         m_timestamp=Timestamp::clock::now();
       }
-      if (isUninitialised(cachedResult[i]))
-        computeTensor(i);
     }
     return cachedResult[i];
   }
@@ -225,7 +222,7 @@ namespace civita
   }
 
   
-  void Scan::computeTensor(size_t idx) const
+  void Scan::computeTensor() const
   {
     if (!arg) return;
     if (dimension<arg->rank())
@@ -236,27 +233,19 @@ namespace civita
           stride*=argDims[j];
         if (argVal>=1 && argVal<argDims[dimension])
           // argVal is interpreted as the binning window. -ve argVal ignored
-//          for (size_t i=0; i<cachedResult.hypercube().numElements(); i+=stride*argDims[dimension])
-//            for (size_t j=0; j<stride; ++j)
-//              for (size_t j1=0; j1<argDims[dimension]*stride; j1+=stride)
-          {
-            auto r1=div(ssize_t(idx),ssize_t(stride));
-            auto i=argDims[dimension]*stride*(r1.quot/argDims[dimension]);
-            auto j=r1.rem;
-            auto j1=stride*r1.quot;
-            size_t k=i+j+max(ssize_t(0), ssize_t(j1-ssize_t(argVal-1)*stride));
-            cachedResult[i+j+j1]=arg->atHCIndex(i+j+j1);
-            for (; k<i+j+j1; checkCancel(), k+=stride)
-              f(cachedResult[i+j+j1], arg->atHCIndex(k), k);
-          }
+          for (size_t i=0; i<cachedResult.hypercube().numElements(); i+=stride*argDims[dimension])
+            for (size_t j=0; j<stride; ++j)
+              for (size_t j1=0; j1<argDims[dimension]*stride; j1+=stride)
+                {
+                  size_t k=i+j+max(ssize_t(0), ssize_t(j1-ssize_t(argVal-1)*stride));
+                  cachedResult[i+j+j1]=arg->atHCIndex(i+j+j1);
+                  for (; k<i+j+j1; checkCancel(), k+=stride)
+                    f(cachedResult[i+j+j1], arg->atHCIndex(k), k);
+              }
         else // scan over whole dimension
-//          for (size_t i=0; i<cachedResult.hypercube().numElements(); i+=stride*argDims[dimension])
-//            for (size_t j=0; j<stride; ++j)
+          for (size_t i=0; i<cachedResult.hypercube().numElements(); i+=stride*argDims[dimension])
+            for (size_t j=0; j<stride; ++j)
               {
-                auto r1=div(ssize_t(idx),ssize_t(stride));
-                auto i=argDims[dimension]*stride*(r1.quot/argDims[dimension]);
-                auto j=r1.rem;
-
                 cachedResult[i+j]=arg->atHCIndex(i+j);
                 for (size_t k=i+j+stride; k<i+j+stride*argDims[dimension]; checkCancel(), k+=stride)
                   {
