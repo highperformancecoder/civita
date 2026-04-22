@@ -25,6 +25,10 @@
 #include <regex>
 #include <initializer_list>
 
+#ifdef CLASSDESC
+#include <classdesc_access.h>
+#endif
+
 namespace civita
 {
   // internal class for extracting quarter/year data
@@ -33,6 +37,9 @@ namespace civita
     std::regex pattern;
     bool swapVars=false;
     std::string rePat;
+#ifdef CLASSDESC
+    CLASSDESC_ACCESS(Extractor);
+#endif
   public:
     /// initialise regex pattern
     /// @param fmt dimenion unit string describing this time type
@@ -50,18 +57,23 @@ namespace civita
   ///two phase caching data independent computation for ptime conversion 
   class AnyVal
   {
-    Dimension dim;
-    std::string format;
-    enum TimeType {quarter, regular, time_input_facet} timeType=time_input_facet;
-    any constructAnyFromQuarter(const std::string&) const;
-    any constructAnyFromRegular(const std::string&) const;
-    Extractor extract;
   public:
+    enum TimeType {quarter, regular, time_input_facet};
     AnyVal()=default;
     AnyVal(const Dimension& dim) {setDimension(dim);}
     void setDimension(const Dimension&);
     const Dimension& dimension() const {return dim;}
     any operator()(const std::string&) const;
+  private:
+#ifdef CLASSDESC
+    CLASSDESC_ACCESS(AnyVal);
+#endif
+    Dimension dim;
+    std::string format;
+    TimeType timeType=time_input_facet;
+    any constructAnyFromQuarter(const std::string&) const;
+    any constructAnyFromRegular(const std::string&) const;
+    Extractor extract;
   };
 
   /// convert string rep to an any rep
@@ -86,6 +98,9 @@ namespace civita
   /// labels describing the points along dimensions. These can be strings (text type), time values (boost::posix_time type) or numerical values (double)
   class XVector: public NamedDimension, public std::vector<any>
   {
+#ifdef CLASSDESC
+    CLASSDESC_ACCESS(XVector);
+#endif
   public:
     typedef std::vector<any> V;
     XVector() {}
@@ -129,13 +144,41 @@ namespace civita
 }
 
 #ifdef CLASSDESC
-#pragma omit json_pack civita::xvector
-#pragma omit json_unpack civita::xvector
+#define CLASSDESC_json_pack___civita__XVector
+#define CLASSDESC_json_unpack___civita__XVector
 #include <json_pack_base.h>
 namespace classdesc
 {
   void json_pack(json_unpack_t& j, const std::string&, civita::XVector& x);
   void json_unpack(json_unpack_t& j, const std::string&, civita::XVector& x);
 }
+
+// Extractor doesn't contain any state information, but Classdesc
+// can't recognise this, so create null descriptors.
+#define CLASSDESC_pack___civita__Extractor
+#define CLASSDESC_unpack___civita__Extractor
+#define CLASSDESC_json_pack___civita__Extractor
+#define CLASSDESC_json_unpack___civita__Extractor
+#define CLASSDESC_xml_pack___civita__Extractor
+#define CLASSDESC_xml_unpack___civita__Extractor
+#define CLASSDESC_random_init___civita__Extractor
+namespace classdesc_access
+{
+  template <> struct access_pack<civita::Extractor>:
+    public classdesc::NullDescriptor<classdesc::pack_t> {};
+  template <> struct access_unpack<civita::Extractor>:
+    public classdesc::NullDescriptor<classdesc::unpack_t> {};
+  template <> struct access_json_pack<civita::Extractor>:
+    public classdesc::NullDescriptor<classdesc::json_pack_t> {};
+  template <> struct access_json_unpack<civita::Extractor>:
+    public classdesc::NullDescriptor<classdesc::json_unpack_t> {};
+  template <> struct access_xml_pack<civita::Extractor>:
+    public classdesc::NullDescriptor<classdesc::xml_pack_t> {};
+  template <> struct access_xml_unpack<civita::Extractor>:
+    public classdesc::NullDescriptor<classdesc::xml_unpack_t> {};
+  template <> struct access_random_init<civita::Extractor>:
+    public classdesc::NullDescriptor<classdesc::random_init_t> {};
+}
 #endif
+
 #endif
