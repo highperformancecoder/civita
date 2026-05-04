@@ -147,6 +147,7 @@ namespace civita
 #define CLASSDESC_json_pack___civita__XVector
 #define CLASSDESC_json_unpack___civita__XVector
 #include <json_pack_base.h>
+#include <xml_pack_base.h>
 namespace classdesc
 {
   void json_pack(json_unpack_t& j, const std::string&, civita::XVector& x);
